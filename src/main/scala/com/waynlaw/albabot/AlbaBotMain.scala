@@ -1,7 +1,7 @@
 package com.waynlaw.albabot
 
-object AlbalbotMain{
+object AlbaBotMain{
   def main(args: Array[String]) {
-    Console println "Hello world"
+    Console println Configure.load()
   }
 }
