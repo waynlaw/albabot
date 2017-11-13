@@ -5,7 +5,6 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 
 case class Configure(apiKey: String, secretKey: String, baseUrl: String) {
-
 }
 
 object Configure {
