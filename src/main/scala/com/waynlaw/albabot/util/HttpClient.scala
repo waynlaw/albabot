@@ -1,6 +1,6 @@
 package com.waynlaw.albabot.util
 
-import org.apache.http.{HttpEntity, HttpResponse}
+import org.apache.http.{Consts, HttpEntity, HttpResponse, NameValuePair}
 import org.apache.http.client.{ClientProtocolException, ResponseHandler}
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.impl.client.HttpClients
@@ -8,6 +8,10 @@ import org.apache.http.util.EntityUtils
 import org.json4s.DefaultFormats
 import org.json4s.JsonAST.JValue
 import org.json4s.native.JsonMethods.parse
+import org.apache.http.client.entity.UrlEncodedFormEntity
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.message.BasicNameValuePair
+import java.util
 
 /**
   *
@@ -15,7 +19,7 @@ import org.json4s.native.JsonMethods.parse
   * @since: 2017. 11. 17.
   * @note:
   */
-class HttpClient(apiKey:String, secretKey: String) {
+class HttpClient(apiKey: String, secretKey: String) {
 
   val httpclient = HttpClients.createDefault
 
@@ -34,8 +38,26 @@ class HttpClient(apiKey:String, secretKey: String) {
     }
   }
 
-  def get(url: String): JValue ={
+  def get(url: String): JValue = {
     val req = new HttpGet(url)
+    val body: String = httpclient.execute(req, resHandler)
+    parse(body).camelizeKeys
+  }
+
+
+  def post(url: String, headers: Map[String, String], params: Map[String, String]): JValue = {
+    val formparams = new util.ArrayList[NameValuePair]
+    for (p <- params) {
+      formparams.add(new BasicNameValuePair(p._1, p._2))
+    }
+    val entity = new UrlEncodedFormEntity(formparams, Consts.UTF_8)
+    val req = new HttpPost(url)
+    req.setEntity(entity)
+
+    for (h <- headers) {
+      req.setHeader(h._1, h._2)
+    }
+
     val body: String = httpclient.execute(req, resHandler)
     parse(body).camelizeKeys
   }
