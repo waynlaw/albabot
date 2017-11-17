@@ -8,11 +8,11 @@ import org.apache.http.client.ResponseHandler
 import org.apache.http.util.EntityUtils
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.client.methods.HttpGet
-import java.util.regex.Pattern
-
-import com.waynlaw.albabot.model.LastCurrency
+import com.waynlaw.albabot.model._
 import org.json4s.{DefaultFormats, JValue}
 import org.json4s.native.JsonMethods.parse
+
+
 /**
   *
   * @author: Lawrence
@@ -24,45 +24,41 @@ object BithumbApi {
 
   val config = Configure.load()
 
-  def baseUrl: String = config.baseUrl
+  val baseUrl: String = config.baseUrl
+
+  implicit val formats = DefaultFormats
+
+  val cli = new HttpClient(config.apiKey, config.secretKey)
 
   /**
     * API  : https://api.bithumb.com/public/ticker/{currency}
+    * TYPE : Public
     * NOTE : bithumb 거래소 마지막 거래 정보
     */
-  def getLastInfo(currency: String): String = {
-    val getLastInfoUrl = "public/ticker"
-    val api = List(baseUrl, getLastInfoUrl, currency).mkString("/")
-
-
-    val httpclient = HttpClients.createDefault
-
-    val getRequest = new HttpGet(api)
-
-    System.out.println("Executing request " + getRequest.getRequestLine)
-
-    // Create a custom response handler
-    val responseHandler = new ResponseHandler[String]() {
-      override def handleResponse(response: HttpResponse): String = {
-        val status: Int = response.getStatusLine.getStatusCode
-        if (status >= 200 && status < 300) {
-          val entity: HttpEntity = response.getEntity
-          if (entity != null) EntityUtils.toString(entity)
-          else null
-        }
-        else throw new ClientProtocolException("Unexpected response status: " + status)
-      }
-    }
-    val responseBody: String = httpclient.execute(getRequest, responseHandler)
-
-    Console println responseBody
-    implicit val formats = DefaultFormats
-
-
-    val parse1: JValue = parse(responseBody).camelizeKeys
-
-    Console println parse1
-    Console println (parse1 \\ "data").extract[LastCurrency]
-    ""
+  def getTicker(currency: String): Ticker = {
+    val api = List(baseUrl, "public/ticker", currency).mkString("/")
+    cli.get(api).extract[Ticker]
   }
+
+  /**
+    * API  : https://api.bithumb.com/public/orderbook/{currency}
+    * TYPE : Public
+    * NOTE : bithumb 거래소 판/구매 등록 대기 또는 거래 중 내역 정보
+    */
+  def getOrderbook(currency: String): Orderbook = {
+    val api = List(baseUrl, "public/orderbook", currency).mkString("/")
+    cli.get(api).extract[Orderbook]
+  }
+
+
+  /**
+    * API  : https://api.bithumb.com/public/recent_transactions/{currency}
+    * TYPE : Public
+    * NOTE : bithumb 거래소 거래 체결 완료 내역
+    */
+  def getRecentTransactions(currency: String): RecentTransactions = {
+    val api = List(baseUrl, "public/recent_transactions", currency).mkString("/")
+    cli.get(api).extract[RecentTransactions]
+  }
+
 }

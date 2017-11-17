@@ -16,7 +16,7 @@ class RealWorld() extends EventSource with Actor {
     override def run(action: Action.ActionVal): Unit = {
         action match {
             case RequestCurrency =>
-                val info = BithumbApi.getLastInfo("BTC") // TODO: will fix async
+                val info = BithumbApi.getTicker("BTC") // TODO: will fix async
         }
     }
 }

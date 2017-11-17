@@ -1,0 +1,88 @@
+package com.waynlaw.albabot.model
+
+/**
+  *
+  * @author: Lawrence
+  * @since: 2017. 11. 13.
+  * @note:
+  */
+
+/*
+{
+    "status": "0000",
+    "data": {
+        "opening_price" : "504000",
+        "closing_price" : "505000",
+        "min_price"     : "504000",
+        "max_price"     : "516000",
+        "average_price" : "509533.3333",
+        "units_traded"  : "14.71960286",
+        "volume_1day"   : "14.71960286",
+        "volume_7day"   : "15.81960286",
+        "buy_price"     : "505000",
+        "sell_price"    : "504000",
+        "date"          : 1417141032622
+    }
+}
+*/
+
+case class TickerData(
+                       openingPrice: String,
+                       closingPrice: String,
+                       minPrice: String,
+                       maxPrice: String,
+                       averagePrice: String,
+                       unitsTraded: String,
+                       volume1day: String,
+                       volume7day: String,
+                       buyPrice: String,
+                       sellPrice: String,
+                       date: String
+                     )
+
+case class Ticker(status: String, data: TickerData)
+
+
+/*
+
+
+case class Ticker(
+                         openingPrice: BigInt,
+                         closingPrice: BigInt,
+                         minPrice: BigInt,
+                         maxPrice: BigInt,
+                         averagePrice: BigInt,
+                         unitsTraded: BigInt,
+                         volume1day: BigInt,
+                         volume7day: BigInt,
+                         buyPrice: BigInt,
+                         sellPrice: BigInt,
+                         date: String
+                       ) {
+
+  def this(openingPrice: String,
+           closingPrice: String,
+           minPrice: String,
+           maxPrice: String,
+           averagePrice: String,
+           unitsTraded: String,
+           volume1day: String,
+           volume7day: String,
+           buyPrice: String,
+           sellPrice: String,
+           date: String) =
+    this(
+      BigInt((openingPrice.toDouble * 100000000).toInt),
+      BigInt((closingPrice.toDouble * 100000000).toInt),
+      BigInt((minPrice.toDouble * 100000000).toInt),
+      BigInt((maxPrice.toDouble * 100000000).toInt),
+      BigInt((averagePrice.toDouble * 100000000).toInt),
+      BigInt((unitsTraded.toDouble * 100000000).toInt),
+      BigInt((volume1day.toDouble * 100000000).toInt),
+      BigInt((volume7day.toDouble * 100000000).toInt),
+      BigInt((buyPrice.toDouble * 100000000).toInt),
+      BigInt((sellPrice.toDouble * 100000000).toInt),
+      date)
+}
+
+*/

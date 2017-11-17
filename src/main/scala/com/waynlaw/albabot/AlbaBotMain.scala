@@ -17,8 +17,10 @@ object AlbaBotMain{
         realWorld,
         realWorld
     )
-    runner.start()
+//    runner.start()
 
-    Console println BithumbApi.getLastInfo("BTC")
+    Console println BithumbApi.getTicker("BTC")
+    Console println BithumbApi.getOrderbook("BTC")
+    Console println BithumbApi.getRecentTransactions("BTC")
   }
 }
