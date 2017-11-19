@@ -176,7 +176,7 @@ object Strategist {
         }
 
         def shouldTrade(state: StrategistModel, timestamp: BigInt, currencyUnit: BigInt, krwUnit: BigInt): Option[TradeAction.TradeActionVal] = {
-            val historyAngle = MathUtil.computeAngle(MathUtil.removeNoise(state.history).map(x => x.copy(timestamp = x.timestamp / 100000)))
+            val historyAngle = MathUtil.computeAngle(MathUtil.removeNoise(state.history).map(x => x.copy(timestamp = x.timestamp / 1000)))
             val isDecreasing = 0 > historyAngle
             val lastPrice = state.history.lastOption.map(_.price / krwUnit * krwUnit).getOrElse(BigInt(1))
             val buyableAmount = state.krw * StringUtils.SATOSHI_UNIT / lastPrice / currencyUnit * currencyUnit

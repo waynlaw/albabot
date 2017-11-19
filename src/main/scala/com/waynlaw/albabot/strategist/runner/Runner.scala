@@ -34,7 +34,7 @@ class Runner(
             val event = eventSource.fetchEvent.getOrElse(Event.Tick)
             val timestamp = System.currentTimeMillis()
             val (newState, actionList) = evaluator(lastState, event, timestamp)
-            val angle = MathUtil.computeAngle(MathUtil.removeNoise(lastState.history).map(x => x.copy(timestamp = x.timestamp / 100000)))
+            val angle = MathUtil.computeAngle(MathUtil.removeNoise(lastState.history).map(x => x.copy(timestamp = x.timestamp / 1000)))
 
             println(s"\nTime: $timestamp] angle:$angle $actionList, $event\n${PrettyPrint.prettyPrint(lastState)} ->\n${PrettyPrint.prettyPrint(newState)} ")
             println(s"history num : ${newState.history.length}")
