@@ -4,7 +4,11 @@ version := "1.0"
 
 scalaVersion := "2.12.4"
 
+resolvers += "central" at "http://repo1.maven.org/maven2/"
+
 libraryDependencies ++= Seq(
   "org.apache.httpcomponents" % "httpclient" % "4.5.3",
-  "org.json4s" %% "json4s-native" % "3.5.2"
+  "org.json4s" %% "json4s-native" % "3.5.2",
+  "org.scalactic" %% "scalactic" % "3.0.4",
+  "org.scalatest" %% "scalatest" % "3.0.4" % "test"
 )

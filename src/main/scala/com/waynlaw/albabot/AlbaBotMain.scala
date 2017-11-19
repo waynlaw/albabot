@@ -23,7 +23,7 @@ object AlbaBotMain {
     //    Console println BithumbApi.getOrderbook("BCH")
     //    Console println BithumbApi.getRecentTransactions("BCH")
 
-    Console println BithumbApi.tickerInfo("BTC")
+//    Console println BithumbApi.tickerInfo("BTC")
 
   }
 }
