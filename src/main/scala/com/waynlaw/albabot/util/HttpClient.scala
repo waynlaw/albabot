@@ -13,13 +13,15 @@ import org.apache.http.client.methods.HttpPost
 import org.apache.http.message.BasicNameValuePair
 import java.util
 
+import com.typesafe.scalalogging.LazyLogging
+
 /**
   *
   * @author: Lawrence
   * @since: 2017. 11. 17.
   * @note:
   */
-class HttpClient(apiKey: String, secretKey: String) {
+class HttpClient(apiKey: String, secretKey: String) extends LazyLogging {
 
   val httpclient = HttpClients.createDefault
 
@@ -41,6 +43,7 @@ class HttpClient(apiKey: String, secretKey: String) {
   def get(url: String): JValue = {
     val req = new HttpGet(url)
     val body: String = httpclient.execute(req, resHandler)
+    logger.debug("body : {}", body)
     parse(body).camelizeKeys
   }
 
@@ -60,7 +63,7 @@ class HttpClient(apiKey: String, secretKey: String) {
 
     val body: String = httpclient.execute(req, resHandler)
 
-    Console println body
+    logger.debug("body : {}", body)
     parse(body).camelizeKeys
   }
 }
