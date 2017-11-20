@@ -145,6 +145,42 @@ object BithumbApi {
   }
 
   /**
+    * API  : https://api.bithumb.com/info/orders
+    * TYPE : Private
+    * NOTE : 판/구매 거래 주문 등록 또는 진행 중인 거래
+    */
+  def orders(currency: String, orderId: String, `type`: String, count: String,  after: String): Orders = {
+    val endpoint = "info/orders"
+    val api = List(baseUrl, endpoint).mkString("/")
+
+    val params = Map("endpoint" -> s"/$endpoint",
+      "order_currency" -> currency,
+      "currency" -> currency,
+      "order_id" -> orderId,
+      "type" -> `type`,
+      "count" -> count,
+      "after" -> after
+    )
+
+    val nNonce = String.valueOf(System.currentTimeMillis)
+
+    val strData = HtmlUtil.encodeURIComponent(HtmlUtil.mapToQueryString(params))
+    val str: String = s"/${endpoint}" + ";" + strData + ";" + nNonce
+
+    val headers = Map(
+      "Content-Type" -> "application/x-www-form-urlencoded; charset=utf-8",
+      "api-client-type" -> "2",
+      "Api-Key" -> config.apiKey,
+      "Api-Sign" -> HtmlUtil.asHex(HtmlUtil.hmacSha512(str, config.secretKey)),
+      "Api-Nonce" -> nNonce
+    )
+
+
+
+    client.post(api, headers, params).extract[Orders]
+  }
+
+  /**
     * API  : https://api.bithumb.com/trade/place
     * TYPE : Private
     * NOTE : bithumb 회원 판/구매 거래 주문 등록 및 체결

@@ -59,6 +59,8 @@ class HttpClient(apiKey: String, secretKey: String) {
     }
 
     val body: String = httpclient.execute(req, resHandler)
+
+    Console println body
     parse(body).camelizeKeys
   }
 }

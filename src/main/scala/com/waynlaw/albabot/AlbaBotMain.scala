@@ -23,7 +23,11 @@ object AlbaBotMain {
     //    Console println BithumbApi.getOrderbook("BCH")
     //    Console println BithumbApi.getRecentTransactions("BCH")
 
-//    Console println BithumbApi.tickerInfo("BTC")
+    //    Console println BithumbApi.tickerInfo("BTC")
 
+//    Console println BithumbApi.place("QTUM", "1", "15830", "bid")
+//     orderId: String, `type`: String, count: String,  after: String
+//    Console println BithumbApi.orders("QTUM", "1511180986926412", "bid", "100", "1511211000")
+//    Console println BithumbApi.orderDetail("QTUM", "1511179593025365", "bid")
   }
 }
