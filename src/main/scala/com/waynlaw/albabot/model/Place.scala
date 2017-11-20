@@ -33,5 +33,4 @@ package com.waynlaw.albabot.model
  */
 case class PlaceData (contId: String, units: String, price: String, total: Long, fee: String)
 
-case class Place (status: String, orderId: String, data: List[PlaceData])
-
+case class Place(status: String, orderId: String, data: List[PlaceData])

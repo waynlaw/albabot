@@ -9,6 +9,8 @@ import org.apache.http.util.EntityUtils
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.client.methods.HttpGet
 import com.waynlaw.albabot.model._
+import com.waynlaw.albabot.model.coin.CoinType.Coin
+import org.json4s.JsonAST.JString
 import org.json4s.{DefaultFormats, JValue, JsonAST}
 import org.json4s.native.JsonMethods.parse
 
@@ -64,27 +66,13 @@ object BithumbApi {
     * TYPE : Private
     * NOTE : bithumb 거래소 회원 정보
     */
-  def account(currency: String): Account = {
+  def account(currency: Coin): Either[BithumbError, Account] = {
     val endpoint = "info/account"
-    val api = List(baseUrl, endpoint).mkString("/")
 
     val params = Map("endpoint" -> s"/${endpoint}",
-      "currency" -> currency)
+      "currency" -> currency.value)
 
-    val nNonce = String.valueOf(System.currentTimeMillis)
-
-    val strData = HtmlUtil.encodeURIComponent(HtmlUtil.mapToQueryString(params))
-    val str: String = s"/${endpoint}" + ";" + strData + ";" + nNonce
-
-    val headers = Map(
-      "Content-Type" -> "application/x-www-form-urlencoded; charset=utf-8",
-      "api-client-type" -> "2",
-      "Api-Key" -> config.apiKey,
-      "Api-Sign" -> HtmlUtil.asHex(HtmlUtil.hmacSha512(str, config.secretKey)),
-      "Api-Nonce" -> nNonce
-    )
-
-    client.post(api, headers, params).extract[Account]
+    postCall[Account](endpoint, params)
   }
 
 
@@ -93,27 +81,13 @@ object BithumbApi {
     * TYPE : Private
     * NOTE : bithumb 거래소 회원 지갑 정보
     */
-  def balance(currency: String): Balance = {
+  def balance(currency: Coin): Either[BithumbError, Balance] = {
     val endpoint = "info/balance"
-    val api = List(baseUrl, endpoint).mkString("/")
 
     val params = Map("endpoint" -> s"/${endpoint}",
-      "currency" -> currency)
+      "currency" -> currency.value)
 
-    val nNonce = String.valueOf(System.currentTimeMillis)
-
-    val strData = HtmlUtil.encodeURIComponent(HtmlUtil.mapToQueryString(params))
-    val str: String = s"/${endpoint}" + ";" + strData + ";" + nNonce
-
-    val headers = Map(
-      "Content-Type" -> "application/x-www-form-urlencoded; charset=utf-8",
-      "api-client-type" -> "2",
-      "Api-Key" -> config.apiKey,
-      "Api-Sign" -> HtmlUtil.asHex(HtmlUtil.hmacSha512(str, config.secretKey)),
-      "Api-Nonce" -> nNonce
-    )
-
-    client.post(api, headers, params).extract[Balance]
+    postCall[Balance](endpoint, params)
   }
 
   /**
@@ -121,27 +95,13 @@ object BithumbApi {
     * TYPE : Private
     * NOTE : bithumb 거래소 회원 입금 주소
     */
-  def walletAddress(currency: String): WalletAddress = {
+  def walletAddress(currency: Coin): Either[BithumbError, WalletAddress] = {
     val endpoint = "info/wallet_address"
-    val api = List(baseUrl, endpoint).mkString("/")
 
     val params = Map("endpoint" -> s"/${endpoint}",
-      "currency" -> currency)
+      "currency" -> currency.value)
 
-    val nNonce = String.valueOf(System.currentTimeMillis)
-
-    val strData = HtmlUtil.encodeURIComponent(HtmlUtil.mapToQueryString(params))
-    val str: String = s"/${endpoint}" + ";" + strData + ";" + nNonce
-
-    val headers = Map(
-      "Content-Type" -> "application/x-www-form-urlencoded; charset=utf-8",
-      "api-client-type" -> "2",
-      "Api-Key" -> config.apiKey,
-      "Api-Sign" -> HtmlUtil.asHex(HtmlUtil.hmacSha512(str, config.secretKey)),
-      "Api-Nonce" -> nNonce
-    )
-
-    client.post(api, headers, params).extract[WalletAddress]
+    postCall[WalletAddress](endpoint, params)
   }
 
   /**
@@ -149,35 +109,19 @@ object BithumbApi {
     * TYPE : Private
     * NOTE : 판/구매 거래 주문 등록 또는 진행 중인 거래
     */
-  def orders(currency: String, orderId: String, `type`: String, count: String,  after: String): Orders = {
+  def orders(currency: Coin, orderId: String, `type`: String, count: String,  after: String): Either[BithumbError, Orders] = {
     val endpoint = "info/orders"
-    val api = List(baseUrl, endpoint).mkString("/")
 
     val params = Map("endpoint" -> s"/$endpoint",
-      "order_currency" -> currency,
-      "currency" -> currency,
+      "order_currency" -> currency.value,
+      "currency" -> currency.value,
       "order_id" -> orderId,
       "type" -> `type`,
       "count" -> count,
       "after" -> after
     )
 
-    val nNonce = String.valueOf(System.currentTimeMillis)
-
-    val strData = HtmlUtil.encodeURIComponent(HtmlUtil.mapToQueryString(params))
-    val str: String = s"/${endpoint}" + ";" + strData + ";" + nNonce
-
-    val headers = Map(
-      "Content-Type" -> "application/x-www-form-urlencoded; charset=utf-8",
-      "api-client-type" -> "2",
-      "Api-Key" -> config.apiKey,
-      "Api-Sign" -> HtmlUtil.asHex(HtmlUtil.hmacSha512(str, config.secretKey)),
-      "Api-Nonce" -> nNonce
-    )
-
-
-
-    client.post(api, headers, params).extract[Orders]
+    postCall[Orders](endpoint, params)
   }
 
   /**
@@ -185,31 +129,17 @@ object BithumbApi {
     * TYPE : Private
     * NOTE : bithumb 회원 판/구매 거래 주문 등록 및 체결
     */
-  def place(currency: String, units: String, price: String, tradeType: String): Place = {
+  def place(currency: Coin, units: String, price: String, tradeType: String): Either[BithumbError, Place] = {
     val endpoint = "trade/place"
-    val api = List(baseUrl, endpoint).mkString("/")
 
     val params = Map("endpoint" -> s"/$endpoint",
-      "order_currency" -> currency,
+      "order_currency" -> currency.value,
       "units" -> units,
       "price" -> price,
       "type" -> tradeType
     )
 
-    val nNonce = String.valueOf(System.currentTimeMillis)
-
-    val strData = HtmlUtil.encodeURIComponent(HtmlUtil.mapToQueryString(params))
-    val str: String = s"/${endpoint}" + ";" + strData + ";" + nNonce
-
-    val headers = Map(
-      "Content-Type" -> "application/x-www-form-urlencoded; charset=utf-8",
-      "api-client-type" -> "2",
-      "Api-Key" -> config.apiKey,
-      "Api-Sign" -> HtmlUtil.asHex(HtmlUtil.hmacSha512(str, config.secretKey)),
-      "Api-Nonce" -> nNonce
-    )
-
-    client.post(api, headers, params).extract[Place]
+    postCall[Place](endpoint, params)
   }
 
   /**
@@ -217,29 +147,51 @@ object BithumbApi {
     * TYPE : Private
     * NOTE : bithumb 회원 판/구매 거래 주문 등록 및 체결
     */
-  def orderDetail(currency: String, orderId: String, tradeType: String): OrderDetail = {
+  def orderDetail(currency: Coin, orderId: String, tradeType: String): Either[BithumbError, OrderDetail] = {
     val endpoint = "info/order_detail"
-    val api = List(baseUrl, endpoint).mkString("/")
 
     val params = Map("endpoint" -> s"/$endpoint",
-      "currency" -> currency,
+      "currency" -> currency.value,
       "order_id" -> orderId,
       "type" -> tradeType
     )
 
-    val nNonce = String.valueOf(System.currentTimeMillis)
+    postCall[OrderDetail](endpoint, params)
+  }
 
+
+  private def postCall[T: Manifest](endpoint: String, params: Map[String, String]): Either[BithumbError, T] = {
+    val nNonce = makeNonce
+    val apiSign = makeApiSign(endpoint, params, nNonce)
+    val headers = makeHeaders(config.apiKey, apiSign, nNonce)
+    parsingBody[T](client.post(List(baseUrl, endpoint).mkString("/"), headers, params))
+  }
+
+  private def makeNonce = String.valueOf(System.currentTimeMillis)
+
+  private def makeApiSign(endpoint: String, params: Map[String, String], nNonce: String): String = {
     val strData = HtmlUtil.encodeURIComponent(HtmlUtil.mapToQueryString(params))
     val str: String = s"/${endpoint}" + ";" + strData + ";" + nNonce
 
-    val headers = Map(
+    HtmlUtil.asHex(HtmlUtil.hmacSha512(str, config.secretKey))
+  }
+
+  private def makeHeaders(apiKey: String, apiSign: String, apiNonce: String): Map[String,String] = {
+    Map(
       "Content-Type" -> "application/x-www-form-urlencoded; charset=utf-8",
       "api-client-type" -> "2",
-      "Api-Key" -> config.apiKey,
-      "Api-Sign" -> HtmlUtil.asHex(HtmlUtil.hmacSha512(str, config.secretKey)),
-      "Api-Nonce" -> nNonce
+      "Api-Key" -> apiKey,
+      "Api-Sign" -> apiSign,
+      "Api-Nonce" -> apiNonce
     )
+  }
 
-    client.post(api, headers, params).extract[OrderDetail]
+  private def parsingBody[T: Manifest](body: JValue): Either[BithumbError, T] = {
+    body \ "status" match {
+      case JString("0000") =>
+        Right(body.extract[T])
+      case _ =>
+        Left(body.extract[BithumbError])
+    }
   }
 }

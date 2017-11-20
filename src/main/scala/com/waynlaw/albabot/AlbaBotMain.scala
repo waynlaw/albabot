@@ -1,6 +1,7 @@
 package com.waynlaw.albabot
 
 import com.typesafe.scalalogging.LazyLogging
+import com.waynlaw.albabot.model.coin.CoinType
 import com.waynlaw.albabot.strategist.{RealWorld, Strategist}
 import com.waynlaw.albabot.strategist.model.StrategistModel
 import com.waynlaw.albabot.strategist.runner.Runner
@@ -26,8 +27,9 @@ object AlbaBotMain extends LazyLogging{
 
     //    Console println BithumbApi.tickerInfo("BTC")
 
+//      Console println BithumbApi.account(CoinType.BCH)
 //    logger.debug("here")
-    Console println BithumbApi.place("QTUM", "0.1", "15850", "bid")
+//    Console println BithumbApi.place("QTUM", "0.1", "16000", "bid")
 //     orderId: String, `type`: String, count: String,  after: String
 //    Console println BithumbApi.orders("QTUM", "1511180986926412", "bid", "100", "1511211000")
 //    Console println BithumbApi.orderDetail("QTUM", "1511179593025365", "bid")

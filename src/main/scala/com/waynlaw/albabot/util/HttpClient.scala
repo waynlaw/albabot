@@ -14,6 +14,7 @@ import org.apache.http.message.BasicNameValuePair
 import java.util
 
 import com.typesafe.scalalogging.LazyLogging
+import org.apache.commons.lang3.StringEscapeUtils
 
 /**
   *
@@ -42,28 +43,66 @@ class HttpClient(apiKey: String, secretKey: String) extends LazyLogging {
 
   def get(url: String): JValue = {
     val req = new HttpGet(url)
+
+    val reqStr = s"""
+      |================= Request =================
+      |${req.getMethod} ${url}
+      |${req.getAllHeaders.toList.mkString("\n")}
+      |
+      |===========================================
+    """.stripMargin
+
     val body: String = httpclient.execute(req, resHandler)
-    logger.debug("body : {}", body)
+
+    val resStr =
+      s"""
+         |================= Response ================
+         |${req.getMethod} ${url}
+         |
+         |${body}
+         |===========================================
+       """.stripMargin
+
+    logger.debug("{}", reqStr)
+    logger.debug("{}", resStr)
     parse(body).camelizeKeys
   }
 
-
   def post(url: String, headers: Map[String, String], params: Map[String, String]): JValue = {
-    val formparams = new util.ArrayList[NameValuePair]
+    val formParams = new util.ArrayList[NameValuePair]
     for (p <- params) {
-      formparams.add(new BasicNameValuePair(p._1, p._2))
+      formParams.add(new BasicNameValuePair(p._1, p._2))
     }
-    val entity = new UrlEncodedFormEntity(formparams, Consts.UTF_8)
+    val entity = new UrlEncodedFormEntity(formParams, Consts.UTF_8)
     val req = new HttpPost(url)
+
     req.setEntity(entity)
 
     for (h <- headers) {
       req.setHeader(h._1, h._2)
     }
 
+    val reqStr = s"""
+      |================= Request =================
+      |${req.getMethod} ${url}
+      |${headers.map(h => s"${h._1}: ${h._2}").mkString("\n")}
+      |
+      |===========================================
+    """.stripMargin
+
     val body: String = httpclient.execute(req, resHandler)
 
-    logger.debug("body : {}", body)
+    val resStr =
+      s"""
+         |================= Response ================
+         |${req.getMethod} ${url}
+         |
+         |${StringEscapeUtils.unescapeJava(body)}
+         |===========================================
+       """.stripMargin
+
+    logger.debug("{}", reqStr)
+    logger.debug("{}", resStr)
     parse(body).camelizeKeys
   }
 }
