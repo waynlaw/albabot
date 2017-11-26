@@ -2,7 +2,9 @@ package com.waynlaw.albabot.strategist.runner
 
 import com.waynlaw.albabot.strategist.model.{Action, Event, StrategistModel}
 import com.waynlaw.albabot.strategist.model.{Action, Event, StrategistModel}
-import com.waynlaw.albabot.util.{MathUtil, PrettyPrint}
+import com.waynlaw.albabot.util.{Logger, MathUtil, PrettyPrint}
+
+import com.typesafe.scalalogging.LazyLogging
 
 object Runner {
     val MAX_TICK_MS = 2000
@@ -14,7 +16,7 @@ class Runner(
                 evaluator: (StrategistModel, Event.EventVal, BigInt) => (StrategistModel, List[Action.ActionVal]),
                 eventSource: EventSource,
                 actor: Actor
-            ) extends Thread {
+            ) extends Thread with LazyLogging {
 
     def nextTick(event: Event.EventVal, actionList: List[Action.ActionVal], tick: Int): Int = {
         val newTick = (event, actionList) match {
@@ -36,8 +38,8 @@ class Runner(
             val (newState, actionList) = evaluator(lastState, event, timestamp)
             val angle = MathUtil.computeAngle(MathUtil.removeNoise(lastState.history).map(x => x.copy(timestamp = x.timestamp / 1000)))
 
-            println(s"\nTime: $timestamp] angle:$angle $actionList, $event\n${PrettyPrint.prettyPrint(lastState)} ->\n${PrettyPrint.prettyPrint(newState)} ")
-            println(s"history num : ${newState.history.length}")
+            logger.debug(s"\nTime: $timestamp] angle:$angle $actionList, $event\n${PrettyPrint.prettyPrint(lastState)} ->\n${PrettyPrint.prettyPrint(newState)} ")
+            logger.debug(s"history num : ${newState.history.length}")
 
             for {
                 action <- actionList
