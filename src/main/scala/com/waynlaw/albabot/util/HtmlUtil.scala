@@ -7,10 +7,10 @@ package com.waynlaw.albabot.util
   * @note:
   */
 
-import javax.crypto.Mac
-import javax.crypto.spec.SecretKeySpec
 import java.math.BigInteger
 import java.net.URLEncoder
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64
 import org.apache.commons.codec.binary.Hex

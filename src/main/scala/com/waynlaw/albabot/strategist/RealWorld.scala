@@ -1,7 +1,7 @@
 package com.waynlaw.albabot.strategist
 
-import com.waynlaw.albabot.model.coin.CoinType
 import com.waynlaw.albabot.model.OrderDetailData
+import com.waynlaw.albabot.model.coin.CoinType
 import com.waynlaw.albabot.strategist.model.Action._
 import com.waynlaw.albabot.strategist.model.{Action, Event}
 import com.waynlaw.albabot.strategist.runner.{Actor, EventSource}

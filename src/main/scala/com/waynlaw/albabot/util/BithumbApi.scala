@@ -1,18 +1,10 @@
 package com.waynlaw.albabot.util
 
 import com.waynlaw.albabot.Configure
-import org.apache.http.HttpEntity
-import org.apache.http.HttpResponse
-import org.apache.http.client.ClientProtocolException
-import org.apache.http.client.ResponseHandler
-import org.apache.http.util.EntityUtils
-import org.apache.http.impl.client.HttpClients
-import org.apache.http.client.methods.HttpGet
 import com.waynlaw.albabot.model._
 import com.waynlaw.albabot.model.coin.CoinType.Coin
 import org.json4s.JsonAST.JString
-import org.json4s.{DefaultFormats, JValue, JsonAST}
-import org.json4s.native.JsonMethods.parse
+import org.json4s.{DefaultFormats, JValue}
 
 
 /**

@@ -1,9 +1,8 @@
 package com.waynlaw.albabot.strategist.runner
 
+import com.typesafe.scalalogging.LazyLogging
 import com.waynlaw.albabot.strategist.model.{Action, Event, StrategistModel}
 import com.waynlaw.albabot.util.{MathUtil, PrettyPrint}
-
-import com.typesafe.scalalogging.LazyLogging
 
 object Runner {
     val MAX_TICK_MS = 2000
