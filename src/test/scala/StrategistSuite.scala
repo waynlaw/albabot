@@ -1,13 +1,15 @@
 
-import com.waynlaw.albabot.strategist.Strategist
+import com.waynlaw.albabot.strategist.{DecisionMaker, Strategist}
 import com.waynlaw.albabot.strategist.model._
-import com.waynlaw.albabot.util.StringUtils
+import com.waynlaw.albabot.util.RealNumber
 import org.scalatest.FunSuite
 
 class StrategistSuite extends FunSuite {
 
+    val decisionMaker = new DecisionMaker()
+
     test("시작상태 테스트") {
-        val strategist = new Strategist()
+        val strategist = new Strategist(decisionMaker)
         val (newState, actions) = strategist.compute(StrategistModel(), Event.Tick, 1000 * 1000)
 
         assert(newState.state == State.Init)
@@ -16,21 +18,21 @@ class StrategistSuite extends FunSuite {
     }
 
     test("사용자 정보 수신 테스트") {
-        val strategist = new Strategist()
-        val (newState, actions) = strategist.compute(StrategistModel(state = State.Init), Event.ReceiveUserBalance(100, 200), 1000 * 1000)
+        val strategist = new Strategist(decisionMaker)
+        val (newState, actions) = strategist.compute(StrategistModel(state = State.Init), Event.ReceiveUserBalance(100, RealNumber(200)), 1000 * 1000)
 
         assert(newState.state == State.WaitingCurrencyInfo)
         assert(actions.contains(Action.RequestCurrency))
         assert(newState.krw == 100)
-        assert(newState.cryptoCurrency == List(CryptoCurrencyInfo(200, 0, CryptoCurrencyState.UnknownPrice)))
+        assert(newState.cryptoCurrency == List(CryptoCurrencyInfo(RealNumber(200), 0, CryptoCurrencyState.UnknownPrice)))
     }
 
     test("화폐 정보 수신 테스트") {
-        val strategist = new Strategist()
+        val strategist = new Strategist(decisionMaker)
 
         var state: StrategistModel = StrategistModel(
             state = State.WaitingCurrencyInfo,
-            cryptoCurrency = List(CryptoCurrencyInfo(200, 0, CryptoCurrencyState.UnknownPrice))
+            cryptoCurrency = List(CryptoCurrencyInfo(RealNumber(200), 0, CryptoCurrencyState.UnknownPrice))
         )
 
         for (i <- 0 to Strategist.HISTORY_MINIMUM_FOR_TRADING.toInt) {
@@ -39,11 +41,11 @@ class StrategistSuite extends FunSuite {
         }
 
         assert(state.state == State.Trading)
-        assert(state.cryptoCurrency == List(CryptoCurrencyInfo(200, 100, CryptoCurrencyState.Nothing)))
+        assert(state.cryptoCurrency == List(CryptoCurrencyInfo(RealNumber(200), 100, CryptoCurrencyState.Nothing)))
     }
 
     test("일반 상태 테스트") {
-        val strategist = new Strategist(10, 20)
+        val strategist = new Strategist(decisionMaker, 20)
 
         val currencyHistory = for {
             i <- 0 to Strategist.HISTORY_MINIMUM_FOR_TRADING.toInt
@@ -59,14 +61,14 @@ class StrategistSuite extends FunSuite {
 
         val (newState, action) = strategist.compute(state, Event.ReceivePrice(0, 201), timestamp)
         val buyPrice = 201 / 20 * 20
-        val buyAmount = BigInt(10001) * StringUtils.SATOSHI_UNIT / buyPrice / 10 * 10
+        val buyAmount = RealNumber(10001).divide(buyPrice, 0)
 
         assert(action.contains(Action.RequestBuy(buyAmount, buyPrice, timestamp)))
         assert(newState.cryptoCurrency == List(CryptoCurrencyInfo(buyAmount, buyPrice, CryptoCurrencyState.TryToBuy(timestamp))))
     }
 
     test("구매 주문 반영 테스트") {
-        val strategist = new Strategist(10, 20)
+        val strategist = new Strategist(decisionMaker, 20)
 
         val currencyHistory = for {
             i <- 0 to Strategist.HISTORY_MINIMUM_FOR_TRADING.toInt
@@ -78,12 +80,12 @@ class StrategistSuite extends FunSuite {
             krw = 10001,
             state = State.Trading,
             history = currencyHistory.toArray,
-            cryptoCurrency = List(CryptoCurrencyInfo(200, 400, CryptoCurrencyState.TryToBuy(timestamp)))
+            cryptoCurrency = List(CryptoCurrencyInfo(RealNumber(200), 400, CryptoCurrencyState.TryToBuy(timestamp)))
         )
 
 
 
         val (newState, _) = strategist.compute(state, Event.BuyingOrderConfirmed(timestamp, "id123"), timestamp + 100)
-        assert(newState.cryptoCurrency == List(CryptoCurrencyInfo(200, 400, CryptoCurrencyState.WaitingForBuying("id123", 200))))
+        assert(newState.cryptoCurrency == List(CryptoCurrencyInfo(RealNumber(200), 400, CryptoCurrencyState.WaitingForBuying("id123", Nil))))
     }
 }
