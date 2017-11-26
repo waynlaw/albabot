@@ -58,27 +58,15 @@ trait RealNumberOrdering extends scala.math.Ordering[RealNumber] {
 case class RealNumber(number: BigInt, exponent: BigInt = 0) {
 
     def +(rhs: RealNumber): RealNumber = {
-        if (exponent < rhs.exponent) {
-            copy(number = number + rhs.number * RealNumber.pow10(rhs.exponent - exponent), exponent)
-        } else if (exponent > rhs.exponent) {
-            copy(number = number * RealNumber.pow10(exponent - rhs.exponent) + rhs.number, rhs.exponent)
-        } else {
-            copy(number = number + rhs.number, exponent)
-        }
+        numericOperation(rhs, _ + _)
     }
 
     def -(rhs: RealNumber): RealNumber = {
-        if (exponent < rhs.exponent) {
-            copy(number = number - rhs.number * RealNumber.pow10(rhs.exponent - exponent), exponent)
-        } else if (exponent > rhs.exponent) {
-            copy(number = number * RealNumber.pow10(exponent - rhs.exponent) - rhs.number, rhs.exponent)
-        } else {
-            copy(number = number - rhs.number, exponent)
-        }
+        numericOperation(rhs, _ - _)
     }
 
     def * (rhs: BigInt): RealNumber = {
-        copy(number * rhs)
+        copy(number = number * rhs)
     }
 
     def unary_-(): RealNumber = {
@@ -94,12 +82,43 @@ case class RealNumber(number: BigInt, exponent: BigInt = 0) {
     }
 
     def < (rhs: RealNumber): Boolean = {
+        booleanOperation(rhs, _ < _)
+    }
+
+    def == (rhs: RealNumber): Boolean = {
+        booleanOperation(rhs, _ == _)
+    }
+
+    def != (rhs: RealNumber): Boolean = {
+        booleanOperation(rhs, _ != _)
+    }
+
+    override def equals(obj: scala.Any): Boolean = {
+        obj match {
+            case rhs: RealNumber =>
+                booleanOperation(rhs, _ == _)
+            case _ =>
+                false
+        }
+    }
+
+    private def numericOperation[A](rhs: RealNumber, func:(BigInt, BigInt) => BigInt): RealNumber = {
         if (exponent < rhs.exponent) {
-            number < rhs.number * RealNumber.pow10(rhs.exponent - exponent)
+            copy(number = func(number, rhs.number * RealNumber.pow10(rhs.exponent - exponent)), exponent = exponent)
         } else if (exponent > rhs.exponent) {
-            number * RealNumber.pow10(exponent - rhs.exponent) < rhs.number
+            copy(number = func(number * RealNumber.pow10(exponent - rhs.exponent), rhs.number), exponent = rhs.exponent)
         } else {
-            number < rhs.number
+            copy(number = func(number, rhs.number), exponent = exponent)
+        }
+    }
+
+    private def booleanOperation[A](rhs: RealNumber, func:(BigInt, BigInt) => Boolean): Boolean = {
+        if (exponent < rhs.exponent) {
+            func(number, rhs.number * RealNumber.pow10(rhs.exponent - exponent))
+        } else if (exponent > rhs.exponent) {
+            func(number * RealNumber.pow10(exponent - rhs.exponent), rhs.number)
+        } else {
+            func(number, rhs.number)
         }
     }
 
@@ -107,7 +126,7 @@ case class RealNumber(number: BigInt, exponent: BigInt = 0) {
         if (0 <= exponent) {
             number * RealNumber.pow10(exponent)
         } else {
-            (number - RealNumber.pow10(exponent) / 2) / RealNumber.pow10(exponent)
+            (number + RealNumber.pow10(-exponent) / 2) / RealNumber.pow10(-exponent)
         }
     }
 
