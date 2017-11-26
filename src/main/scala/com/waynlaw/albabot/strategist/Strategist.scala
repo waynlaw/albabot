@@ -14,8 +14,7 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
             state(lastState, event, timestamp, decisions),
             krw(lastState, event, timestamp, decisions),
             cryptoCurrency(lastState, event, timestamp, decisions),
-            lastCurrencyRequestTime(lastState, event, timestamp, decisions),
-            lastCurrencyUpdateTime(lastState, event, timestamp, decisions),
+            lastState.currencyRequester.update(event, timestamp),
             lastState.balanceRequester.update(event, timestamp),
             history(lastState, event, timestamp, decisions)
         )
@@ -148,23 +147,6 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
         }
     }
 
-    def lastCurrencyRequestTime(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): BigInt = {
-        if (decisions.isRequestCurrency) {
-            timestamp
-        } else {
-            state.lastCurrencyRequestTime
-        }
-    }
-
-    def lastCurrencyUpdateTime(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): BigInt = {
-        event match {
-            case _: Event.ReceivePrice =>
-                timestamp
-            case _ =>
-                state.lastCurrencyUpdateTime
-        }
-    }
-
     def history(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): Array[CurrencyInfo] = {
         event match {
             case Event.ReceivePrice(time, cryptoCurrency) =>
@@ -184,7 +166,7 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
             Nil
         }
 
-        val requestCurrency = if (decisions.isRequestCurrency) {
+        val requestCurrency = if (state.currencyRequester.willRequestUserCurrency) {
             List(Action.RequestCurrency)
         } else {
             Nil

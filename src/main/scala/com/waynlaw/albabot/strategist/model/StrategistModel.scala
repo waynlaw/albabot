@@ -1,15 +1,15 @@
 package com.waynlaw.albabot.strategist.model
 
-import com.waynlaw.albabot.strategist.BalanceRequester
+import com.waynlaw.albabot.strategist.{BalanceRequester, CurrencyRequester}
 
 case class StrategistModel(
     state: State.StateVal = State.Init,
     krw: BigInt = 0,
     cryptoCurrency: List[CryptoCurrencyInfo] = Nil,
-    lastCurrencyRequestTime: BigInt = 0,
-    lastCurrencyUpdateTime: BigInt = 0,
+    currencyRequester: CurrencyRequester = CurrencyRequester(),
     balanceRequester: BalanceRequester = BalanceRequester(),
     history: Array[CurrencyInfo] = Array()
 ) {
 
 }
+
