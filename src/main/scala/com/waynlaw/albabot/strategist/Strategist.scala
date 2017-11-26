@@ -16,11 +16,10 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
             cryptoCurrency(lastState, event, timestamp, decisions),
             lastCurrencyRequestTime(lastState, event, timestamp, decisions),
             lastCurrencyUpdateTime(lastState, event, timestamp, decisions),
-            lastBalanceRequestTime(lastState, event, timestamp, decisions),
-            lastBalanceUpdateTime(lastState, event, timestamp, decisions),
+            lastState.balanceRequester.update(event, timestamp),
             history(lastState, event, timestamp, decisions)
         )
-        (nextState, actionList(lastState, event, timestamp, decisions))
+        (nextState, actionList(nextState, event, timestamp, decisions))
     }
 
     def state(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): State.StateVal = {
@@ -166,23 +165,6 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
         }
     }
 
-    def lastBalanceRequestTime(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): BigInt = {
-        if (decisions.isRequestUserBalance) {
-            timestamp
-        } else {
-            state.lastBalanceRequestTime
-        }
-    }
-
-    def lastBalanceUpdateTime(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): BigInt = {
-        event match {
-            case _: Event.ReceiveUserBalance =>
-                timestamp
-            case _ =>
-                state.lastCurrencyUpdateTime
-        }
-    }
-
     def history(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): Array[CurrencyInfo] = {
         event match {
             case Event.ReceivePrice(time, cryptoCurrency) =>
@@ -196,7 +178,7 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
     }
 
     def actionList(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): List[Action.ActionVal] = {
-        val requestBalance = if (decisions.isRequestUserBalance) {
+        val requestBalance = if (state.balanceRequester.willRequestUserBalance) {
             List(Action.RequestUserBalance)
         } else {
             Nil
