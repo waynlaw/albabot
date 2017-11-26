@@ -1,5 +1,7 @@
 package com.waynlaw.albabot.strategist.model
 
-case class CryptoCurrencyInfo(amount: BigInt, price: BigInt, state: CryptoCurrencyState.StateVal) {
+import com.waynlaw.albabot.util.RealNumber
+
+case class CryptoCurrencyInfo(amount: RealNumber, price: BigInt, state: CryptoCurrencyState.StateVal) {
 
 }

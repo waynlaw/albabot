@@ -1,8 +1,7 @@
 package com.waynlaw.albabot.strategist.runner
 
 import com.waynlaw.albabot.strategist.model.{Action, Event, StrategistModel}
-import com.waynlaw.albabot.strategist.model.{Action, Event, StrategistModel}
-import com.waynlaw.albabot.util.{Logger, MathUtil, PrettyPrint}
+import com.waynlaw.albabot.util.{MathUtil, PrettyPrint}
 
 import com.typesafe.scalalogging.LazyLogging
 
