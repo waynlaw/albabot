@@ -12,16 +12,16 @@ class StrategistSuite extends FunSuite {
         val strategist = new Strategist(decisionMaker)
         val (newState, actions) = strategist.compute(StrategistModel(), Event.Tick, 1000 * 1000)
 
-        assert(newState.state == State.Init)
+        assert(newState.state.getClass == State.Init().getClass)
         assert(actions.contains(Action.RequestUserBalance))
         assert(actions.contains(Action.RequestCurrency))
     }
 
     test("사용자 정보 수신 테스트") {
         val strategist = new Strategist(decisionMaker)
-        val (newState, actions) = strategist.compute(StrategistModel(state = State.Init), Event.ReceiveUserBalance(100, RealNumber(200)), 1000 * 1000)
+        val (newState, actions) = strategist.compute(StrategistModel(state = State.Init()), Event.ReceiveUserBalance(100, RealNumber(200)), 1000 * 1000)
 
-        assert(newState.state == State.WaitingCurrencyInfo)
+        assert(newState.state == State.WaitingCurrencyInfo())
         assert(actions.contains(Action.RequestCurrency))
         assert(newState.krw == 100)
         assert(newState.cryptoCurrency == List(CryptoCurrencyInfo(RealNumber(200), 0, CryptoCurrencyState.UnknownPrice)))
@@ -31,7 +31,7 @@ class StrategistSuite extends FunSuite {
         val strategist = new Strategist(decisionMaker)
 
         var state: StrategistModel = StrategistModel(
-            state = State.WaitingCurrencyInfo,
+            state = State.WaitingCurrencyInfo(),
             cryptoCurrency = List(CryptoCurrencyInfo(RealNumber(200), 0, CryptoCurrencyState.UnknownPrice))
         )
 

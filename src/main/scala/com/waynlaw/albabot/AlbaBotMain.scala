@@ -14,7 +14,7 @@ object AlbaBotMain extends LazyLogging{
     val strategist = new Strategist(decisionMaker, 1000)
     val runner = new Runner(
       StrategistModel(
-        state = State.WaitingCurrencyInfo,
+        state = State.WaitingCurrencyInfo(),
         krw = 20000
       ),
       strategist.compute,

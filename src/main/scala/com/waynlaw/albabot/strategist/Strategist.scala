@@ -11,30 +11,18 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
         val decisions = decisionMaker.Decisions(lastState, event, timestamp, krwUnit)
 
         val nextState = StrategistModel(
-            state(lastState, event, timestamp, decisions),
+            lastState.state.update(lastState, event, timestamp),
             krw(lastState, event, timestamp, decisions),
             cryptoCurrency(lastState, event, timestamp, decisions),
             lastState.currencyRequester.update(event, timestamp),
-            lastState.balanceRequester.update(event, timestamp),
             history(lastState, event, timestamp, decisions)
         )
         (nextState, actionList(nextState, event, timestamp, decisions))
     }
 
-    def state(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): State.StateVal = {
-        (state.state, event) match {
-            case (State.Init, _: Event.ReceiveUserBalance) =>
-                State.WaitingCurrencyInfo
-            case (State.WaitingCurrencyInfo, _) if Strategist.HISTORY_MINIMUM_FOR_TRADING <= state.history.length =>
-                State.Trading
-            case _ =>
-                state.state
-        }
-    }
-
     def krw(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): BigInt = {
         (state.state, event) match {
-            case (State.Init, Event.ReceiveUserBalance(krw, _)) =>
+            case (_:State.Init, Event.ReceiveUserBalance(krw, _)) =>
                 krw
             case (_, Event.ReceiveOrderInfo(orderId, confirmed)) => {
                 val moneyDiff: BigInt = state.cryptoCurrency.map {
@@ -62,10 +50,10 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
     }
 
     def cryptoCurrency(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): List[CryptoCurrencyInfo] = {
-        val updatedInfo = (state.state, event) match {
-            case (State.Init, Event.ReceiveUserBalance(_, cryptoCurrency)) =>
+        val updatedInfo = event match {
+            case Event.ReceiveUserBalance(_, cryptoCurrency) =>
                 List(CryptoCurrencyInfo(cryptoCurrency, 0, CryptoCurrencyState.UnknownPrice))
-            case (_, Event.ReceivePrice(_, cryptoCurrency)) =>
+            case Event.ReceivePrice(_, cryptoCurrency) =>
                 state.cryptoCurrency.map { x =>
                     x.state match {
                         case CryptoCurrencyState.UnknownPrice =>
@@ -74,7 +62,7 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
                             x
                     }
                 }
-            case (_, Event.BuyingOrderConfirmed(orderTimestamp, id)) =>
+            case Event.BuyingOrderConfirmed(orderTimestamp, id) =>
                 state.cryptoCurrency.map { x =>
                     x.state match {
                         case CryptoCurrencyState.TryToBuy(buyTimestamp) if buyTimestamp == orderTimestamp =>
@@ -83,7 +71,7 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
                             x
                     }
                 }
-            case (_, Event.SellingOrderConfirmed(orderTimestamp, id)) =>
+            case Event.SellingOrderConfirmed(orderTimestamp, id) =>
                 state.cryptoCurrency.map { x =>
                     x.state match {
                         case CryptoCurrencyState.TryToSell(sellingTimestamp) if sellingTimestamp == orderTimestamp =>
@@ -93,7 +81,7 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
                     }
                 }
 
-            case (_, Event.ReceiveOrderInfo(orderId, confirmed)) => {
+            case Event.ReceiveOrderInfo(orderId, confirmed) => {
                 state.cryptoCurrency.flatMap { x =>
                     x match {
                         case CryptoCurrencyInfo(amount, price, state @ CryptoCurrencyState.WaitingForBuying(buyingId, transactionIds)) if buyingId == orderId =>
@@ -160,10 +148,11 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
     }
 
     def actionList(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): List[Action.ActionVal] = {
-        val requestBalance = if (state.balanceRequester.willRequestUserBalance) {
-            List(Action.RequestUserBalance)
-        } else {
-            Nil
+        val requestBalance = state.state match {
+            case State.Init(balanceRequester) if balanceRequester.willRequestUserBalance =>
+                List(Action.RequestUserBalance)
+            case _ =>
+                Nil
         }
 
         val requestCurrency = if (state.currencyRequester.willRequestUserCurrency) {
