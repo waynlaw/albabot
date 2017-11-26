@@ -159,6 +159,37 @@ object BithumbApi {
     postCall[OrderDetail](endpoint, params)
   }
 
+  /**
+    * API  : https://api.bithumb.com/trade/market_buy
+    * TYPE : Private
+    * NOTE : 시장가 구매
+    */
+  def orderBuy(currency: Coin, units: String): Either[BithumbError, TradeResult] = {
+    val endpoint = "trade/market_buy"
+
+    val params = Map("endpoint" -> s"/$endpoint",
+      "currency" -> currency.value,
+      "units" -> units,
+    )
+
+    postCall[TradeResult](endpoint, params)
+  }
+
+  /**
+    * API  : https://api.bithumb.com/trade/market_sell
+    * TYPE : Private
+    * NOTE : 시장가 구매
+    */
+  def orderSell(currency: Coin, units: String): Either[BithumbError, TradeResult] = {
+    val endpoint = "trade/market_sell"
+
+    val params = Map("endpoint" -> s"/$endpoint",
+      "currency" -> currency.value,
+      "units" -> units,
+    )
+
+    postCall[TradeResult](endpoint, params)
+  }
 
   private def postCall[T: Manifest](endpoint: String, params: Map[String, String]): Either[BithumbError, T] = {
     val nNonce = makeNonce
