@@ -139,6 +139,15 @@ case class RealNumber(number: BigInt, exponent: BigInt = 0) {
         }
     }
 
+    def floor(exponent: BigInt): RealNumber = {
+        if (this.exponent >= exponent) {
+            this
+        } else {
+            val exponentDiff = exponent - this.exponent
+            copy(number = number / RealNumber.pow10(exponentDiff), exponent)
+        }
+    }
+
     override def toString: String = {
         val intPart = number / RealNumber.pow10(-exponent.toInt)
         val belowPart = (number - (intPart * RealNumber.pow10(-exponent))).toString
