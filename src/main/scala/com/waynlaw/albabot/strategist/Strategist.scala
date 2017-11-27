@@ -12,41 +12,12 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
 
         val nextState = StrategistModel(
             lastState.state.update(lastState, event, timestamp),
-            krw(lastState, event, timestamp, decisions),
+            KrwUpdater.update(decisionMaker)(lastState, event, decisions),
             cryptoCurrency(lastState, event, timestamp, decisions),
             lastState.currencyRequester.update(event, timestamp),
             HistoryUpdater.update(lastState.history, event, timestamp)
         )
         (nextState, actionList(nextState, event, timestamp, decisions))
-    }
-
-    def krw(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): BigInt = {
-        (state.state, event) match {
-            case (_:State.Init, Event.ReceiveUserBalance(krw, _)) =>
-                krw
-            case (_, Event.ReceiveOrderInfo(orderId, confirmed)) => {
-                val moneyDiff: BigInt = state.cryptoCurrency.map {
-                    case CryptoCurrencyInfo(_, _, CryptoCurrencyState.WaitingForBuying(buyingId, transactionIds)) if buyingId == orderId =>
-                        val newConfirms = confirmed.filter(v => !transactionIds.contains(v.transactionId))
-                        newConfirms.map(v => v.amount * v.priceDiff).sum.toBigInt
-
-                    case CryptoCurrencyInfo(_, price, CryptoCurrencyState.WaitingForSelling(sellingId, transactionIds)) if sellingId == orderId =>
-                        val newConfirms = confirmed.filter(v => !transactionIds.contains(v.transactionId))
-                        newConfirms.map(v => v.amount * (price + v.priceDiff) - v.fee).sum.toBigInt
-
-                    case _ =>
-                        BigInt(0)
-                }.sum
-                state.krw + moneyDiff
-            }
-            case _ =>
-                decisions.tradeAction match {
-                    case Some(Buy(amount, price)) =>
-                        state.krw - (amount * price).toBigInt
-                    case _ =>
-                        state.krw
-                }
-        }
     }
 
     def cryptoCurrency(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): List[CryptoCurrencyInfo] = {

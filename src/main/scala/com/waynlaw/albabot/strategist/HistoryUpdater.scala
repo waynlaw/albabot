@@ -2,6 +2,9 @@ package com.waynlaw.albabot.strategist
 
 import com.waynlaw.albabot.strategist.model.{CurrencyInfo, Event}
 
+/*
+ * 화폐 정보는 일정 기간만 보관하고 항상 시간 순서대로 저장한다.
+ */
 object HistoryUpdater {
     val HISTORY_KEEP_DURATION_MS: BigInt = 5 * 60 * 1000
 
