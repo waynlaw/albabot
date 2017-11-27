@@ -15,7 +15,7 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
             krw(lastState, event, timestamp, decisions),
             cryptoCurrency(lastState, event, timestamp, decisions),
             lastState.currencyRequester.update(event, timestamp),
-            history(lastState, event, timestamp, decisions)
+            HistoryUpdater.update(lastState.history, event, timestamp)
         )
         (nextState, actionList(nextState, event, timestamp, decisions))
     }
@@ -135,18 +135,6 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
         }
     }
 
-    def history(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): Array[CurrencyInfo] = {
-        event match {
-            case Event.ReceivePrice(time, cryptoCurrency) =>
-                val newHistory = (state.history :+ CurrencyInfo(cryptoCurrency, time))
-                    .filter(x => timestamp - x.timestamp <= Strategist.HISTORY_KEEP_DURATION_MS)
-                    .sortBy(_.timestamp)
-                newHistory
-            case _ =>
-                state.history
-        }
-    }
-
     def actionList(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): List[Action.ActionVal] = {
         val requestBalance = state.state match {
             case State.Init(balanceRequester) if balanceRequester.willRequestUserBalance =>
@@ -184,6 +172,6 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
 }
 
 object Strategist {
-    val HISTORY_KEEP_DURATION_MS: BigInt = 120 * 1000
+
     val HISTORY_MINIMUM_FOR_TRADING: BigInt = 60
 }
