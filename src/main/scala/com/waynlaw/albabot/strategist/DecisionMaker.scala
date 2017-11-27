@@ -16,7 +16,11 @@ class DecisionMaker(coinUnitExp: Int = 0) {
 
         def shouldTrade(state: StrategistModel, timestamp: BigInt, krwUnit: BigInt): Option[TradeAction.TradeActionVal] = {
             val normalInfos = MathUtil.removeNoise(state.history)
-            val avg = normalInfos.map(x => x.price).sum / normalInfos.length
+            val avg = if (0 == normalInfos.length) {
+                BigInt(0)
+            } else {
+                normalInfos.map(x => x.price).sum / normalInfos.length
+            }
             val lastPrice = state.history.lastOption.map(_.price / krwUnit * krwUnit).getOrElse(BigInt(1))
             val buyableAmount = RealNumber(state.krw).divide(lastPrice, coinUnitExp)
 
