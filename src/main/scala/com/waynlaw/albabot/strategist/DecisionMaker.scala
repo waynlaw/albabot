@@ -23,7 +23,6 @@ class DecisionMaker(coinUnitExp: Int = 0) {
             }
             val lastPrice = state.history.lastOption.map(_.price / krwUnit * krwUnit).getOrElse(BigInt(1))
             val buyableAmount = RealNumber(state.krw).divide(lastPrice, coinUnitExp)
-
             state.state match {
                 case _: State.Init | _: State.WaitingCurrencyInfo =>
                     None

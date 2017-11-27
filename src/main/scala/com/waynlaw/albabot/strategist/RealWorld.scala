@@ -2,12 +2,13 @@ package com.waynlaw.albabot.strategist
 
 import com.waynlaw.albabot.model.OrderDetailData
 import com.waynlaw.albabot.model.coin.CoinType
+import com.waynlaw.albabot.model.coin.CoinType.Coin
 import com.waynlaw.albabot.strategist.model.Action._
 import com.waynlaw.albabot.strategist.model.{Action, Event}
 import com.waynlaw.albabot.strategist.runner.{Actor, EventSource}
 import com.waynlaw.albabot.util.{BithumbApi, RealNumber}
 
-class RealWorld() extends EventSource with Actor {
+class RealWorld(coin: Coin) extends EventSource with Actor {
 
     var eventQueue: List[Event.EventVal] = List()
 
@@ -30,25 +31,25 @@ class RealWorld() extends EventSource with Actor {
     override def run(action: Action.ActionVal): Unit = {
         action match {
             case RequestUserBalance =>
-                val balance = BithumbApi.balance(CoinType.BTC)
+                val balance = BithumbApi.balance(coin)
                 eventQueue = eventQueue :+ Event.ReceiveUserBalance(
                     BigInt(balance.right.get.data.availableKrw),
                     RealNumber(balance.right.get.data.availableBtc)
                 )
             case RequestCurrency =>
-                val ticker = BithumbApi.ticker("BTC")
+                val ticker = BithumbApi.ticker(coin)
                 println(ticker)
                 eventQueue = eventQueue :+ Event.ReceivePrice(
                     BigInt(ticker.data.date),
                     (BigInt(ticker.data.buyPrice.toDouble.toInt) + BigInt(ticker.data.sellPrice.toDouble.toInt)) / BigInt(2)
                 )
             case RequestBuy(amount, price, timestamp) =>
-//                val place = BithumbApi.place(CoinType.BTC, amount.toString, price.toString, "bid")
+//                val place = BithumbApi.place(coin, amount.toString, price.toString, "bid")
 //                eventQueue = eventQueue :+ Event.BuyingOrderConfirmed(
 //                    timestamp,
 //                    place.right.get.orderId
 //                )
-                val result = BithumbApi.orderBuy(CoinType.BTC, amount.toString)
+                val result = BithumbApi.orderBuy(coin, amount.toString)
                 result match {
                     case Right(buyResult) =>
                         eventQueue = eventQueue :+ Event.BuyingOrderConfirmed(
@@ -68,12 +69,12 @@ class RealWorld() extends EventSource with Actor {
                 }
 
             case RequestSell(amount, price, timestamp) =>
-//                val place = BithumbApi.place(CoinType.BTC, amount.toString, price.toString, "ask")
+//                val place = BithumbApi.place(coin, amount.toString, price.toString, "ask")
 //                eventQueue = eventQueue :+ Event.SellingOrderConfirmed(
 //                    timestamp,
 //                    place.right.get.orderId
 //                )
-                val result = BithumbApi.orderSell(CoinType.BTC, amount.toString)
+                val result = BithumbApi.orderSell(coin, amount.toString)
                 eventQueue = eventQueue :+ Event.BuyingOrderConfirmed(
                     timestamp,
                     result.right.get.orderId
@@ -87,7 +88,7 @@ class RealWorld() extends EventSource with Actor {
                     ))
                 )
             case RequestTradingInfo(tradingId, isBuying) =>
-                val detail = BithumbApi.orderDetail(CoinType.BTC, tradingId, if (isBuying) "bid" else "ask")
+                val detail = BithumbApi.orderDetail(coin, tradingId, if (isBuying) "bid" else "ask")
                 eventQueue = eventQueue :+ Event.ReceiveOrderInfo(
                     tradingId,
                     detail.right.get.data.map {

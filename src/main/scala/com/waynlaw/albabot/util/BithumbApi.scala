@@ -27,8 +27,8 @@ object BithumbApi {
     * TYPE : Public
     * NOTE : bithumb 거래소 마지막 거래 정보
     */
-  def ticker(currency: String): Ticker = {
-    val api = List(baseUrl, "public/ticker", currency).mkString("/")
+  def ticker(currency: Coin): Ticker = {
+    val api = List(baseUrl, "public/ticker", currency.value).mkString("/")
     client.get(api).extract[Ticker]
   }
 
@@ -37,8 +37,8 @@ object BithumbApi {
     * TYPE : Public
     * NOTE : bithumb 거래소 판/구매 등록 대기 또는 거래 중 내역 정보
     */
-  def orderbook(currency: String): Orderbook = {
-    val api = List(baseUrl, "public/orderbook", currency).mkString("/")
+  def orderbook(currency: Coin): Orderbook = {
+    val api = List(baseUrl, "public/orderbook", currency.value).mkString("/")
     client.get(api).extract[Orderbook]
   }
 
@@ -48,8 +48,8 @@ object BithumbApi {
     * TYPE : Public
     * NOTE : bithumb 거래소 거래 체결 완료 내역
     */
-  def recentTransactions(currency: String): RecentTransactions = {
-    val api = List(baseUrl, "public/recent_transactions", currency).mkString("/")
+  def recentTransactions(currency: Coin): RecentTransactions = {
+    val api = List(baseUrl, "public/recent_transactions", currency.value).mkString("/")
     client.get(api).extract[RecentTransactions]
   }
 

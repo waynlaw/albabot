@@ -11,13 +11,15 @@ package com.waynlaw.albabot.model
 {
     "status"    : "0000",
     "data"      : {
-        "total_btc"     : "665.40127447",
-        "total_krw"     : "305507280",
-        "in_use_btc"    : "127.43629364",
-        "in_use_krw"    : "8839047.0000000000",
-        "available_btc" : "537.96498083",
-        "available_krw" : "294932685.000000000000",
-        "xcoin_last"    : "505000"
+      "total_krw": 51511,
+      "in_use_krw": 0,
+      "available_krw": 51511,
+      "misu_krw": 0,
+      "total_btc": "0.00000000",
+      "in_use_btc": "0.00000000",
+      "available_btc": "0.00000000",
+      "misu_btc": "0.00000000",
+      "xcoin_last": "10915000"
     }
 }
 */
@@ -26,7 +28,7 @@ case class BalanceData(
                         inUseKrw: Int,
                         availableKrw: Int,
                         misuKrw: Int,
-                        misuDepoKrw: Int,
+                        misuDepoKrw: Option[Int],
                         totalBtc: String,
                         inUseBtc: String,
                         availableBtc: String,
