@@ -75,7 +75,7 @@ class RealWorld(coin: Coin) extends EventSource with Actor {
 //                    place.right.get.orderId
 //                )
                 val result = BithumbApi.orderSell(coin, amount.toString)
-                eventQueue = eventQueue :+ Event.BuyingOrderConfirmed(
+                eventQueue = eventQueue :+ Event.SellingOrderConfirmed(
                     timestamp,
                     result.right.get.orderId
                 ) :+ Event.ReceiveOrderInfo(
