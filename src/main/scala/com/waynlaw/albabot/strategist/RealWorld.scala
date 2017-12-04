@@ -22,6 +22,9 @@ class RealWorld(coin: Coin) extends EventSource with Actor {
         }
     }
 
+    override def remainEventNum: Int = {
+        eventQueue.length
+    }
     /*
      * TODO:
      * 1. Async 로 동작 변경
