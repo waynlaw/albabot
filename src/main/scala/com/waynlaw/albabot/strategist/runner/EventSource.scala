@@ -4,4 +4,5 @@ import com.waynlaw.albabot.strategist.model.Event
 
 trait EventSource {
     def fetchEvent: Option[Event.EventVal]
+    def remainEventNum: Int
 }

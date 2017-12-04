@@ -1,12 +1,13 @@
 
 import com.waynlaw.albabot.strategist.{DecisionMaker, Strategist}
 import com.waynlaw.albabot.strategist.model._
+import com.waynlaw.albabot.model.coin.CoinType
 import com.waynlaw.albabot.util.RealNumber
 import org.scalatest.FunSuite
 
 class StrategistSuite extends FunSuite {
 
-    val decisionMaker = new DecisionMaker()
+    val decisionMaker = new DecisionMaker(CoinType.BTC)
 
     test("시작상태 테스트") {
         val strategist = new Strategist(decisionMaker)

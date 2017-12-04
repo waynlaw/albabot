@@ -11,6 +11,7 @@ object Event {
     case class ReceiveUserBalance(krw: BigInt, cryptoCurrency: RealNumber) extends EventVal
     case class BuyingOrderConfirmed(timestamp: BigInt, id: String) extends EventVal
     case class SellingOrderConfirmed(timestamp: BigInt, id: String) extends EventVal
+    case class OrderFailed(timestamp: BigInt) extends EventVal
     case class ReceiveOrderInfo(orderId: String, confirmed: List[ConfirmOrderInfo]) extends EventVal
 }
 

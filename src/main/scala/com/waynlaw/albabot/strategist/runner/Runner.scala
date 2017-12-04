@@ -6,7 +6,7 @@ import com.waynlaw.albabot.util.{MathUtil, PrettyPrint}
 
 object Runner {
     val MAX_TICK_MS = 2000
-    val MIN_TICK_MS = 1000
+    val MIN_TICK_MS = 300
 }
 
 class Runner(
