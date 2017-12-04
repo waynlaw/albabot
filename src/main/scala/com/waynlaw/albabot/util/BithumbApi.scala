@@ -4,7 +4,7 @@ import com.waynlaw.albabot.Configure
 import com.waynlaw.albabot.model._
 import com.waynlaw.albabot.model.coin.CoinType.Coin
 import org.json4s.JsonAST.JString
-import org.json4s.{DefaultFormats, JValue}
+import org.json4s.{DefaultFormats, JValue, JsonAST}
 
 
 /**
@@ -30,6 +30,32 @@ object BithumbApi {
   def ticker(currency: Coin): Ticker = {
     val api = List(baseUrl, "public/ticker", currency.value).mkString("/")
     client.get(api).extract[Ticker]
+  }
+
+  /**
+    * API  : https://api.bithumb.com/public/ticker/ALL
+    * TYPE : Public
+    * NOTE : bithumb 거래소 마지막 거래 정보
+    */
+  def tickerAll(): TickerAll = {
+    val api = List(baseUrl, "public/ticker/ALL").mkString("/")
+    val jValue: JsonAST.JValue = client.get(api)
+
+    val status: String = (jValue \\ "status").extract[String]
+    val date: String = (jValue \\ "data" \\ "date").extract[String]
+
+    TickerAll(status,
+      Map(
+        "BTC" -> TickerData.from((jValue \\ "data" \\ "bTC").extract[TickerWithoutDate], date) ,
+        "ETH" -> TickerData.from((jValue \\ "data" \\ "eTH").extract[TickerWithoutDate], date),
+        "DASH" -> TickerData.from((jValue \\ "data" \\ "dASH").extract[TickerWithoutDate], date),
+        "LTC" -> TickerData.from((jValue \\ "data" \\ "lTC").extract[TickerWithoutDate], date),
+        "ETC" -> TickerData.from((jValue \\ "data" \\ "eTC").extract[TickerWithoutDate], date),
+        "XRP" -> TickerData.from((jValue \\ "data" \\ "xRP").extract[TickerWithoutDate], date),
+        "BCH" -> TickerData.from((jValue \\ "data" \\ "bCH").extract[TickerWithoutDate], date),
+        "XMR" -> TickerData.from((jValue \\ "data" \\ "xMR").extract[TickerWithoutDate], date),
+        "ZEC" -> TickerData.from((jValue \\ "data" \\ "zEC").extract[TickerWithoutDate], date),
+        "QTUM" -> TickerData.from((jValue \\ "data" \\ "qTUM").extract[TickerWithoutDate], date)))
   }
 
   /**
