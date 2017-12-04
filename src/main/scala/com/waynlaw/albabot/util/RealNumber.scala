@@ -81,8 +81,21 @@ case class RealNumber(number: BigInt, exponent: BigInt = 0) {
         }
     }
 
+    def divide(number: RealNumber, limitExponent: BigInt): RealNumber = {
+        val newExponent = exponent - number.exponent
+        if (newExponent <= limitExponent) {
+            copy(number = this.number / RealNumber.pow10(limitExponent - newExponent) / number.number, limitExponent)
+        } else {
+            copy(number = this.number * RealNumber.pow10(newExponent - limitExponent) / number.number, limitExponent)
+        }
+    }
+
     def < (rhs: RealNumber): Boolean = {
         booleanOperation(rhs, _ < _)
+    }
+
+    def <= (rhs: RealNumber): Boolean = {
+        booleanOperation(rhs, _ <= _)
     }
 
     def == (rhs: RealNumber): Boolean = {
