@@ -10,6 +10,9 @@ import org.json4s.{DefaultFormats, JValue}
 import org.json4s.native.JsonMethods.parse
 import com.waynlaw.albabot.strategist.model._
 import com.waynlaw.albabot.strategist.runner.Runner
+import com.waynlaw.albabot.strategist.model.StrategistModel
+import com.waynlaw.albabot.strategist.runner.{Collector, Runner}
+import com.waynlaw.albabot.strategist.{DecisionMaker, RealWorld, Strategist}
 
 object AlbaBotMain extends LazyLogging{
   def main(args: Array[String]) {

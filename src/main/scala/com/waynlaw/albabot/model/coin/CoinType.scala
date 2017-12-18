@@ -19,6 +19,7 @@ object CoinType {
         false
       }
     }
+
   }
 
   /*
@@ -44,12 +45,12 @@ object CoinType {
 
   case object ZEC extends Coin(0.01d, -3, "ZEC", "제트캐시")
 
-  case object QTUM extends Coin(0.1d, "QTUM", "퀀텀")
+  case object QTUM extends Coin(0.1d, -1, "QTUM", "퀀텀")
 
   case object BTG extends Coin(0.01d, -2, "BTG", "비트코인 골드")
 
   def valueOf(value: String): Coin = {
-    value match {
+    value.toUpperCase match {
       case "BTC" => CoinType.BTC
       case "ETH" => CoinType.ETH
       case "DASH" => CoinType.DASH
@@ -63,7 +64,6 @@ object CoinType {
       case _ =>
         CoinType.ALL
     }
-
   }
 
 }
