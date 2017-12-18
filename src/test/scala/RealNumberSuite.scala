@@ -23,4 +23,12 @@ class RealNumberSuite extends FunSuite {
         assert(RealNumber("0.444").divide(2, -2) == RealNumber("0.22"))
         assert(RealNumber("0.4").divide(3, -2) == RealNumber("0.13"))
     }
+
+    test("div real number") {
+        assert(RealNumber("0.2").divide(RealNumber("0.2"), -4) == RealNumber("1.0"))
+        assert(RealNumber("0.04").divide(RealNumber("2"), -2) == RealNumber("0.02"))
+        assert(RealNumber("0.04").divide(RealNumber("2"), -1) == RealNumber("0"))
+        assert(RealNumber("40").divide(RealNumber("0.2"), -2) == RealNumber("200"))
+        assert(RealNumber("10").divide(RealNumber("0.3"), -3) == RealNumber("33.333"))
+    }
 }

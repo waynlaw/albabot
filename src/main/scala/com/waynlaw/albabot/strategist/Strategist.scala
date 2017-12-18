@@ -1,5 +1,6 @@
 package com.waynlaw.albabot.strategist
 
+import com.waynlaw.albabot.strategist.model.CryptoCurrencyState.Nothing
 import com.waynlaw.albabot.strategist.model.TradeAction.{Buy, Sell}
 import com.waynlaw.albabot.strategist.model._
 import com.waynlaw.albabot.util.RealNumber
@@ -24,6 +25,7 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
         val updatedInfo = event match {
             case Event.ReceiveUserBalance(_, cryptoCurrency) =>
                 List(CryptoCurrencyInfo(cryptoCurrency, 0, CryptoCurrencyState.UnknownPrice))
+
             case Event.ReceivePrice(_, cryptoCurrency) =>
                 state.cryptoCurrency.map { x =>
                     x.state match {
@@ -33,19 +35,21 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
                             x
                     }
                 }
+
             case Event.BuyingOrderConfirmed(orderTimestamp, id) =>
                 state.cryptoCurrency.map { x =>
                     x.state match {
-                        case CryptoCurrencyState.TryToBuy(buyTimestamp) if buyTimestamp == orderTimestamp =>
+                        case CryptoCurrencyState.TryToBuy(buyTimestamp, _) if buyTimestamp == orderTimestamp =>
                             x.copy(state = CryptoCurrencyState.WaitingForBuying(id, Nil))
                         case _ =>
                             x
                     }
                 }
+
             case Event.SellingOrderConfirmed(orderTimestamp, id) =>
                 state.cryptoCurrency.map { x =>
                     x.state match {
-                        case CryptoCurrencyState.TryToSell(sellingTimestamp) if sellingTimestamp == orderTimestamp =>
+                        case CryptoCurrencyState.TryToSell(sellingTimestamp, _) if sellingTimestamp == orderTimestamp =>
                             x.copy(state = CryptoCurrencyState.WaitingForSelling(id, Nil))
                         case _ =>
                             x
@@ -58,13 +62,11 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
                         case CryptoCurrencyInfo(amount, price, state @ CryptoCurrencyState.WaitingForBuying(buyingId, transactionIds)) if buyingId == orderId =>
                             val newConfirms = confirmed.filter(v => !transactionIds.contains(v.transactionId))
                             val reduceAmount = newConfirms.map(v => v.amount + v.fee).sum
-                            val sumOfAmount = newConfirms.map(_.amount).sum
+                            val newInfoList = newConfirms.map(v => CryptoCurrencyInfo(v.amount, price - v.priceDiff, CryptoCurrencyState.Nothing))
                             val appliedTransactionIds = newConfirms.map(_.transactionId) ::: transactionIds
                             val remainAmount = amount - reduceAmount
 
-                            (x.copy(amount = remainAmount, state = state.copy(transactionIds = appliedTransactionIds)) ::
-                                CryptoCurrencyInfo(sumOfAmount, price, CryptoCurrencyState.Nothing) ::
-                                Nil
+                            (x.copy(amount = remainAmount, state = state.copy(transactionIds = appliedTransactionIds)) :: newInfoList
                             ).filter(RealNumber(0) < _.amount)
                         case CryptoCurrencyInfo(amount, price, state @ CryptoCurrencyState.WaitingForSelling(sellingId, transactionIds)) if sellingId == orderId =>
                             val newConfirms = confirmed.filter(v => !transactionIds.contains(v.transactionId))
@@ -78,13 +80,29 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
                     }
                 }
             }
+            case Event.OrderFailed(failedTimeStamp) => {
+                state.cryptoCurrency.map {
+                    case v@CryptoCurrencyInfo(_, _, CryptoCurrencyState.TryToBuy(buyTime, _)) if buyTime == failedTimeStamp =>
+                        v.copy(state = CryptoCurrencyState.TryToBuy(buyTime, timestamp))
+                    case v@CryptoCurrencyInfo(_, _, CryptoCurrencyState.TryToSell(sellTime, _)) if sellTime == failedTimeStamp =>
+                        v.copy(state = CryptoCurrencyState.TryToSell(sellTime, timestamp))
+                    case v =>
+                        v
+                }
+            }
             case _ =>
                 state.cryptoCurrency
         }
-        val flattenInfo: List[CryptoCurrencyInfo] = updatedInfo.groupBy(x => (x.price, x.state))
-            .mapValues(x => x.head.copy(x.map(_.amount).sum))
-            .values
-            .toList
+        val nonMergeableList = updatedInfo.filter(_.state.getClass != CryptoCurrencyState.Nothing.getClass)
+        val mergeableList = updatedInfo.filter(_.state.getClass == CryptoCurrencyState.Nothing.getClass)
+
+        val flattenInfo = if (mergeableList.isEmpty) {
+            updatedInfo
+        } else {
+            val amountSum = mergeableList.map(_.amount).sum
+            val summedPrice = mergeableList.map(v => v.amount * v.price).sum.divide(amountSum, -1).toBigInt
+            CryptoCurrencyInfo(amountSum, summedPrice, Nothing) :: nonMergeableList
+        }
 
         decisions.tradeAction match {
             case Some(Buy(amount, price)) =>
@@ -109,40 +127,50 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
     def actionList(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): List[Action.ActionVal] = {
         val requestBalance = state.state match {
             case State.Init(balanceRequester) if balanceRequester.willRequestUserBalance =>
-                List(Action.RequestUserBalance)
+                Action.RequestUserBalance :: Nil
             case _ =>
                 Nil
         }
 
         val requestCurrency = if (state.currencyRequester.willRequestUserCurrency) {
-            List(Action.RequestCurrency)
+            Action.RequestCurrency :: Nil
         } else {
             Nil
         }
 
         val requestTrade = decisions.tradeAction match {
             case Some(Buy(amount, price)) =>
-                List(Action.RequestBuy(amount, price, timestamp))
+                Action.RequestBuy(amount, price, timestamp) :: Nil
             case Some(Sell(amount, price)) =>
-                List(Action.RequestSell(amount, price, timestamp))
+                Action.RequestSell(amount, price, timestamp) :: Nil
             case _ =>
                 Nil
         }
 
         val requestTradingInfo = state.cryptoCurrency.flatMap(x => x.state match {
             case CryptoCurrencyState.WaitingForBuying(id, _) =>
-                List(Action.RequestTradingInfo(id, isBuying = true))
+                Action.RequestTradingInfo(id, isBuying = true) :: Nil
             case CryptoCurrencyState.WaitingForSelling(id, _) =>
-                List(Action.RequestTradingInfo(id, isBuying = false))
+                Action.RequestTradingInfo(id, isBuying = false) :: Nil
             case _ =>
                 Nil
         })
 
-        requestBalance ::: requestCurrency ::: requestTrade ::: requestTradingInfo
+        val retryOrder = state.cryptoCurrency.flatMap(x => x.state match {
+            case CryptoCurrencyState.TryToBuy(orderTimeStamp, errorTime) if 0 != errorTime && Strategist.ORDER_RETRY_DURATION_MS <= timestamp - errorTime =>
+                Action.RequestBuy(x.amount, x.price, orderTimeStamp) :: Nil
+            case CryptoCurrencyState.TryToSell(orderTimeStamp, errorTime) if 0 != errorTime && Strategist.ORDER_RETRY_DURATION_MS <= timestamp - errorTime =>
+                Action.RequestSell(x.amount, x.price, orderTimeStamp) :: Nil
+            case _ =>
+                Nil
+        })
+
+        requestBalance ::: requestCurrency ::: requestTrade ::: requestTradingInfo ::: retryOrder
     }
 }
 
 object Strategist {
 
-    val HISTORY_MINIMUM_FOR_TRADING: BigInt = 60
+    val HISTORY_MINIMUM_FOR_TRADING: BigInt = 120
+    val ORDER_RETRY_DURATION_MS: BigInt = 500
 }

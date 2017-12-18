@@ -8,15 +8,16 @@ import com.waynlaw.albabot.strategist.runner.{Collector, Runner}
 import com.waynlaw.albabot.util.BithumbApi
 import org.json4s.{DefaultFormats, JValue}
 import org.json4s.native.JsonMethods.parse
+import com.waynlaw.albabot.strategist.model._
+import com.waynlaw.albabot.strategist.runner.Runner
 
 object AlbaBotMain extends LazyLogging{
   def main(args: Array[String]) {
     Console println Configure.load()
 
-    val targetCoinType = CoinType.BTC
-
-    val realWorld = new RealWorld(targetCoinType)
-    val decisionMaker = new DecisionMaker(coinUnitExp = -4)
+    val coinType = CoinType.BTC
+    val realWorld = new RealWorld(coinType)
+    val decisionMaker = new DecisionMaker(coinType)
     val strategist = new Strategist(decisionMaker, 1000)
     val runner = new Runner(
       StrategistModel(),
