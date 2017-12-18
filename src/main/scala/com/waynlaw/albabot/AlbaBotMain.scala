@@ -2,9 +2,9 @@ package com.waynlaw.albabot
 
 import com.typesafe.scalalogging.LazyLogging
 import com.waynlaw.albabot.model.coin.CoinType
+import com.waynlaw.albabot.strategist.model.StrategistModel
+import com.waynlaw.albabot.strategist.runner.{Collector, Runner}
 import com.waynlaw.albabot.strategist.{DecisionMaker, RealWorld, Strategist}
-import com.waynlaw.albabot.strategist.model._
-import com.waynlaw.albabot.strategist.runner.Runner
 
 object AlbaBotMain extends LazyLogging{
   def main(args: Array[String]) {
@@ -21,5 +21,9 @@ object AlbaBotMain extends LazyLogging{
       realWorld
     )
     runner.start()
+
+    val collector = new Collector()
+    collector.run()
+
   }
 }

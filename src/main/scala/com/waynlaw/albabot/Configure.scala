@@ -4,8 +4,9 @@ import org.json4s.DefaultFormats
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
-case class Configure(apiKey: String, secretKey: String, baseUrl: String) {
-}
+case class Configure(apiKey: String, secretKey: String, baseUrl: String, collector: CollectorConfigure)
+
+case class CollectorConfigure(tick: Long = 1000)
 
 object Configure {
     def load(): Configure = {

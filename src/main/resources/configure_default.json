@@ -1,5 +1,8 @@
 {
   "apiKey" : "api_key",
   "secretKey" : "secret_key",
-  "baseUrl" : "https://api.bithumb.com"
+  "baseUrl" : "https://api.bithumb.com",
+  "collector": {
+    "tick": 1000
+  }
 }

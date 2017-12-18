@@ -40,12 +40,43 @@ case class TickerData(
                        date: String
                      )
 
+object TickerData {
+  def from(tickerWithoutDate: TickerWithoutDate, date: String): TickerData = {
+    TickerData(
+      tickerWithoutDate.openingPrice,
+      tickerWithoutDate.closingPrice,
+      tickerWithoutDate.minPrice,
+      tickerWithoutDate.maxPrice,
+      tickerWithoutDate.averagePrice,
+      tickerWithoutDate.unitsTraded,
+      tickerWithoutDate.volume1day,
+      tickerWithoutDate.volume7day,
+      tickerWithoutDate.buyPrice,
+      tickerWithoutDate.sellPrice,
+      date
+    )
+
+  }
+}
+
+case class TickerWithoutDate(
+                              openingPrice: String,
+                              closingPrice: String,
+                              minPrice: String,
+                              maxPrice: String,
+                              averagePrice: String,
+                              unitsTraded: String,
+                              volume1day: String,
+                              volume7day: String,
+                              buyPrice: String,
+                              sellPrice: String
+                            )
+
 case class Ticker(status: String, data: TickerData)
 
+case class TickerAll(status: String, data: Map[String, TickerData])
 
 /*
-
-
 case class Ticker(
                          openingPrice: BigInt,
                          closingPrice: BigInt,

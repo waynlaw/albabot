@@ -19,6 +19,7 @@ object CoinType {
         false
       }
     }
+
   }
 
   /*
@@ -47,4 +48,22 @@ object CoinType {
   case object QTUM extends Coin(0.1d, -1, "QTUM", "퀀텀")
 
   case object BTG extends Coin(0.01d, -2, "BTG", "비트코인 골드")
+
+  def valueOf(value: String): Coin = {
+    value.toUpperCase match {
+      case "BTC" => CoinType.BTC
+      case "ETH" => CoinType.ETH
+      case "DASH" => CoinType.DASH
+      case "LTC" => CoinType.LTC
+      case "ETC" => CoinType.ETC
+      case "XRP" => CoinType.XRP
+      case "BCH" => CoinType.BCH
+      case "XMR" => CoinType.XMR
+      case "ZEC" => CoinType.ZEC
+      case "QTUM" => CoinType.QTUM
+      case _ =>
+        CoinType.ALL
+    }
+  }
+
 }
