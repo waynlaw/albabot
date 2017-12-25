@@ -6,22 +6,23 @@ import com.waynlaw.albabot.strategist.model._
 import com.waynlaw.albabot.util.RealNumber
 import com.waynlaw.albabot.util.RealNumber.RealNumberIsNumeric
 
-class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
+class Strategist(krwUnit: BigInt = 1, coinUnitExp: Int = 0) {
 
     def compute(lastState: StrategistModel, event: Event.EventVal, timestamp: BigInt): (StrategistModel, List[Action.ActionVal]) = {
-        val decisions = decisionMaker.Decisions(lastState, event, timestamp, krwUnit)
+        val decisions = DecisionMaker.Decisions(lastState, event, timestamp, krwUnit, coinUnitExp)
 
         val nextState = StrategistModel(
             lastState.state.update(lastState, event, timestamp),
-            KrwUpdater.update(decisionMaker)(lastState, event, decisions),
+            KrwUpdater.update(lastState, event, decisions),
             cryptoCurrency(lastState, event, timestamp, decisions),
             lastState.currencyRequester.update(event, timestamp),
-            HistoryUpdater.update(lastState.history, event, timestamp)
+            HistoryUpdater.update(lastState.history, event, timestamp),
+            decisions
         )
         (nextState, actionList(nextState, event, timestamp, decisions))
     }
 
-    def cryptoCurrency(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): List[CryptoCurrencyInfo] = {
+    def cryptoCurrency(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: DecisionMaker.Decisions): List[CryptoCurrencyInfo] = {
         val updatedInfo = event match {
             case Event.ReceiveUserBalance(_, cryptoCurrency) =>
                 List(CryptoCurrencyInfo(cryptoCurrency, 0, CryptoCurrencyState.UnknownPrice))
@@ -124,7 +125,7 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
         }
     }
 
-    def actionList(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: decisionMaker.Decisions): List[Action.ActionVal] = {
+    def actionList(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: DecisionMaker.Decisions): List[Action.ActionVal] = {
         val requestBalance = state.state match {
             case State.Init(balanceRequester) if balanceRequester.willRequestUserBalance =>
                 Action.RequestUserBalance :: Nil
@@ -171,6 +172,6 @@ class Strategist(decisionMaker: DecisionMaker, krwUnit: BigInt = 1) {
 
 object Strategist {
 
-    val HISTORY_MINIMUM_FOR_TRADING: BigInt = 120
+    val HISTORY_MINIMUM_FOR_TRADING: BigInt = 100
     val ORDER_RETRY_DURATION_MS: BigInt = 500
 }

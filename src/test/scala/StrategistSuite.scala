@@ -1,16 +1,13 @@
 
 import com.waynlaw.albabot.strategist.{DecisionMaker, Strategist}
 import com.waynlaw.albabot.strategist.model._
-import com.waynlaw.albabot.model.coin.CoinType
 import com.waynlaw.albabot.util.RealNumber
 import org.scalatest.FunSuite
 
 class StrategistSuite extends FunSuite {
 
-    val decisionMaker = new DecisionMaker(CoinType.BTC)
-
     test("시작상태 테스트") {
-        val strategist = new Strategist(decisionMaker)
+        val strategist = new Strategist()
         val (newState, actions) = strategist.compute(StrategistModel(), Event.Tick, 1000 * 1000)
 
         assert(newState.state.getClass == State.Init().getClass)
@@ -19,7 +16,7 @@ class StrategistSuite extends FunSuite {
     }
 
     test("사용자 정보 수신 테스트") {
-        val strategist = new Strategist(decisionMaker)
+        val strategist = new Strategist()
         val (newState, actions) = strategist.compute(StrategistModel(state = State.Init()), Event.ReceiveUserBalance(100, RealNumber(200)), 1000 * 1000)
 
         assert(newState.state == State.WaitingCurrencyInfo())
@@ -29,7 +26,7 @@ class StrategistSuite extends FunSuite {
     }
 
     test("화폐 정보 수신 테스트") {
-        val strategist = new Strategist(decisionMaker)
+        val strategist = new Strategist()
 
         var state: StrategistModel = StrategistModel(
             state = State.WaitingCurrencyInfo(),
@@ -46,7 +43,7 @@ class StrategistSuite extends FunSuite {
     }
 
     test("구매 주문 반영 테스트") {
-        val strategist = new Strategist(decisionMaker, 20)
+        val strategist = new Strategist(20)
 
         val currencyHistory = for {
             i <- 0 to Strategist.HISTORY_MINIMUM_FOR_TRADING.toInt
@@ -68,7 +65,7 @@ class StrategistSuite extends FunSuite {
     }
 
     test("구매 체결 테스트") {
-        val strategist = new Strategist(decisionMaker, 20)
+        val strategist = new Strategist(20)
 
         val currencyHistory = for {
             i <- 0 to Strategist.HISTORY_MINIMUM_FOR_TRADING.toInt
@@ -106,7 +103,7 @@ class StrategistSuite extends FunSuite {
     }
 
     test("판매 주문 반영 테스트") {
-        val strategist = new Strategist(decisionMaker, 20)
+        val strategist = new Strategist(20)
 
         val currencyHistory = for {
             i <- 0 to Strategist.HISTORY_MINIMUM_FOR_TRADING.toInt

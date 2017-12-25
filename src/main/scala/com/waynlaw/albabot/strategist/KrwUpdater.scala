@@ -8,12 +8,12 @@ import com.waynlaw.albabot.strategist.model._
  * 소지금은 주문을 하거나, 주문의 결과에 변동이 있는 경우 변경된다.
  */
 object KrwUpdater {
-    def update(decisionMaker: DecisionMaker)(state: StrategistModel, event: Event.EventVal, decisions: decisionMaker.Decisions): BigInt = {
+    def update(state: StrategistModel, event: Event.EventVal, decisions: DecisionMaker.Decisions): BigInt = {
         (state.state, event) match {
             case (_:State.Init, Event.ReceiveUserBalance(krw, _)) =>
                 krw
             case _ =>
-                state.krw + changesByConfirmedOrder(state, event) + changesByBuying(decisionMaker)(state, decisions)
+                state.krw + changesByConfirmedOrder(state, event) + changesByBuying(state, decisions)
         }
     }
 
@@ -42,7 +42,7 @@ object KrwUpdater {
         }
     }
 
-    private def changesByBuying(decisionMaker: DecisionMaker)(state: StrategistModel, decisions: decisionMaker.Decisions) = {
+    private def changesByBuying(state: StrategistModel, decisions: DecisionMaker.Decisions) = {
         decisions.tradeAction match {
             case Some(Buy(amount, price)) =>
                 -(amount * price).toBigInt
