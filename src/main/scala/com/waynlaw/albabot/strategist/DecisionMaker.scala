@@ -23,9 +23,23 @@ object DecisionMaker {
             shouldTrade(state, timestamp, krwUnit, coinUnitExp)
         }
 
+        def isTradeable(state: StrategistModel): Boolean = {
+            state.state match {
+                case _: State.Init | _: State.WaitingCurrencyInfo =>
+                    false
+                case _ if state.history.length < Strategist.HISTORY_MINIMUM_FOR_TRADING =>
+                    false
+                case _ if state.cryptoCurrency.exists(x => x.state.isInstanceOf[CryptoCurrencyState.TryToBuy]) =>
+                    false
+                case _ if state.cryptoCurrency.exists(x => x.state.isInstanceOf[CryptoCurrencyState.TryToSell]) =>
+                    false
+                case _ =>
+                    true
+            }
+        }
+
         def shouldTrade(state: StrategistModel, timestamp: BigInt, krwUnit: BigInt, coinUnitExp: Int): Decisions = {
             val historyAngle = MathUtil.computeAngle(MathUtil.removeNoise(state.history).map(x => x.copy(timestamp = x.timestamp / 1000)))
-            val isDecreasing = 0 > historyAngle
             val lastPrice = state.history.lastOption.map(_.price / krwUnit * krwUnit).getOrElse(BigInt(1))
             val buyKrw = if (DecisionMaker.BUY_IN_SINGLE_STEP < state.krw) {
                 val angleFactor = BigInt((historyAngle / 50.0).toInt max 0)
@@ -36,14 +50,8 @@ object DecisionMaker {
             val buyableAmount = RealNumber(buyKrw).divide(lastPrice, coinUnitExp)
 
             state.state match {
-                case _: State.Init | _: State.WaitingCurrencyInfo =>
+                case _ if !isTradeable(state) =>
                    state.decisions.copy(tradeAction = None, isBuyable = false)
-                case _ if state.history.length < Strategist.HISTORY_MINIMUM_FOR_TRADING =>
-                   state.decisions.copy(tradeAction = None, isBuyable = false)
-                case _ if state.cryptoCurrency.exists(x => x.state.isInstanceOf[CryptoCurrencyState.TryToBuy]) =>
-                    state.decisions.copy(tradeAction = None)
-                case _ if state.cryptoCurrency.exists(x => x.state.isInstanceOf[CryptoCurrencyState.TryToSell]) =>
-                    state.decisions.copy(tradeAction = None)
                 case _ if 50 <= historyAngle =>
                     if (!state.decisions.isBuyable && RealNumber(0) < buyableAmount && BUY_TIME_DURATION <= timestamp - state.decisions.lastBuyTime) {
                         DecisionMaker.Decisions(Some(Buy(buyableAmount, lastPrice)), isBuyable = true, timestamp)
