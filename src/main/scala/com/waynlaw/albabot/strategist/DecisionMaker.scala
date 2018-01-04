@@ -1,9 +1,7 @@
 package com.waynlaw.albabot.strategist
 
-import com.waynlaw.albabot.strategist.DecisionMaker.Decisions
-import com.waynlaw.albabot.strategist.model.TradeAction.{Buy, Sell}
+import com.waynlaw.albabot.strategist.decision.{BasicBuyRule, BasicSellRule, TradeRule}
 import com.waynlaw.albabot.strategist.model._
-import com.waynlaw.albabot.util.{MathUtil, RealNumber}
 
 class DecisionMaker() {
 
@@ -11,18 +9,23 @@ class DecisionMaker() {
 }
 
 object DecisionMaker {
-    val MIN_PRICE_DIFF: BigInt = 40000
-    val DROP_ALLOW_DIFF: BigInt = 30000
-    val BUY_IN_SINGLE_STEP: BigInt = 10 * 10000
-    val BUY_TIME_DURATION: BigInt = 3 * 30 * 1000
-
-    case class Decisions(tradeAction: Option[TradeAction.TradeActionVal], isBuyable: Boolean, lastBuyTime: BigInt)
+    case class Decisions(tradeAction: Option[TradeAction.TradeActionVal] = None, tradeRules: List[TradeRule] = Decisions.rules())
 
     object Decisions {
         def apply(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, krwUnit: BigInt, coinUnitExp: Int): Decisions = {
             shouldTrade(state, timestamp, krwUnit, coinUnitExp)
         }
 
+        /**
+          * 사용할 기본 전략. 왼쪽에 있을수록 먼저 평가된다.
+          */
+        def rules(): List[TradeRule] = {
+            List(BasicBuyRule(), BasicSellRule())
+        }
+
+        /**
+          * 현재 거래가능 상태인지 유무를 판단한다.
+          */
         def isTradeable(state: StrategistModel): Boolean = {
             state.state match {
                 case _: State.Init | _: State.WaitingCurrencyInfo =>
@@ -39,27 +42,13 @@ object DecisionMaker {
         }
 
         def shouldTrade(state: StrategistModel, timestamp: BigInt, krwUnit: BigInt, coinUnitExp: Int): Decisions = {
-            val historyAngle = MathUtil.computeAngle(MathUtil.removeNoise(state.history).map(x => x.copy(timestamp = x.timestamp / 1000)))
-            val lastPrice = state.history.lastOption.map(_.price / krwUnit * krwUnit).getOrElse(BigInt(1))
-            val buyKrw = if (DecisionMaker.BUY_IN_SINGLE_STEP < state.krw) {
-                val angleFactor = BigInt((historyAngle / 50.0).toInt max 0)
-                DecisionMaker.BUY_IN_SINGLE_STEP * angleFactor
-            } else {
-                state.krw
-            }
-            val buyableAmount = RealNumber(buyKrw).divide(lastPrice, coinUnitExp)
+            val newRules = state.decisions.tradeRules.map(_.update(state, timestamp))
 
-            state.state match {
-                case _ if !isTradeable(state) =>
-                   state.decisions.copy(tradeAction = None, isBuyable = false)
-                case _ if 50 <= historyAngle =>
-                    if (!state.decisions.isBuyable && RealNumber(0) < buyableAmount && BUY_TIME_DURATION <= timestamp - state.decisions.lastBuyTime) {
-                        DecisionMaker.Decisions(Some(Buy(buyableAmount, lastPrice)), isBuyable = true, timestamp)
-                    } else {
-                        state.decisions.copy(None, isBuyable = false)
-                    }
-                case _ =>
-                    state.decisions.copy(None, isBuyable = false)
+            if (isTradeable(state)) {
+                val decision = newRules.map(_.evaluate(state, timestamp)).find(x => x.nonEmpty).flatten
+                state.decisions.copy(tradeAction = decision, tradeRules = newRules)
+            } else {
+                state.decisions.copy(tradeAction = None, tradeRules = newRules)
             }
         }
     }

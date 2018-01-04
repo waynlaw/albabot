@@ -8,7 +8,7 @@ case class StrategistModel(
     cryptoCurrency: List[CryptoCurrencyInfo] = Nil,
     currencyRequester: CurrencyRequester = CurrencyRequester(),
     history: Array[CurrencyInfo] = Array(),
-    decisions: DecisionMaker.Decisions = DecisionMaker.Decisions(None, isBuyable = false, 0)
+    decisions: DecisionMaker.Decisions = DecisionMaker.Decisions()
 ) {
 
 }
