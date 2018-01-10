@@ -1,8 +1,9 @@
 package com.waynlaw.albabot.strategist
 
-import com.waynlaw.albabot.model.OrderDetailData
+import com.waynlaw.albabot.model.{OrderDetailData, TickerData}
 import com.waynlaw.albabot.model.coin.CoinType
 import com.waynlaw.albabot.model.coin.CoinType.Coin
+import com.waynlaw.albabot.storage.Storage
 import com.waynlaw.albabot.strategist.model.Action._
 import com.waynlaw.albabot.strategist.model.{Action, Event}
 import com.waynlaw.albabot.strategist.runner.{Actor, EventSource}
@@ -11,6 +12,8 @@ import com.waynlaw.albabot.util.{BithumbApi, RealNumber}
 class RealWorld(coin: Coin) extends EventSource with Actor {
 
     var eventQueue: List[Event.EventVal] = List()
+
+    val storage = Storage
 
     override def fetchEvent: Option[Event.EventVal] = {
         eventQueue match {
@@ -41,10 +44,11 @@ class RealWorld(coin: Coin) extends EventSource with Actor {
                 )
             case RequestCurrency =>
                 try {
-                    val ticker = BithumbApi.ticker(coin)
+                    val tickers: List[TickerData] = storage.get(coin.value)
+                    val latestData = tickers.head
                     eventQueue = eventQueue :+ Event.ReceivePrice(
-                        BigInt(ticker.data.date),
-                        (BigInt(ticker.data.buyPrice.toDouble.toInt) + BigInt(ticker.data.sellPrice.toDouble.toInt)) / BigInt(2)
+                        BigInt(latestData.date),
+                        (BigInt(latestData.buyPrice.toDouble.toInt) + BigInt(latestData.sellPrice.toDouble.toInt)) / BigInt(2)
                     )
                 } catch {
                     case _: Throwable =>

@@ -17,6 +17,7 @@ import scala.collection.concurrent._
   */
 object Storage {
 
+  // List에 앞에 있을 수록 최신 데이터이다.
   private val coinToTickers = new ConcurrentHashMap[Coin, List[TickerData]]()
 
   def get(): Map[Coin, List[TickerData]] = coinToTickers asScala
@@ -26,7 +27,6 @@ object Storage {
   }
 
   def get(coin: Coin): List[TickerData] = coinToTickers.get(coin)
-
 
   def set(key: String, value: TickerData): List[TickerData] = {
     this.set(CoinType.valueOf(key), value)
@@ -38,9 +38,8 @@ object Storage {
     if(tickers == null) {
       coinToTickers.put(coin, List(value))
     } else {
-      coinToTickers.put(coin, tickers :+ value)
+      coinToTickers.put(coin, value :: tickers)
     }
-
   }
 
   def set(lists: Map[Coin, TickerData]): List[TickerData] = {
