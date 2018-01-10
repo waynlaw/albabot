@@ -4,11 +4,11 @@ import com.typesafe.scalalogging.LazyLogging
 import com.waynlaw.albabot.model.coin.CoinType
 import com.waynlaw.albabot.strategist.model.StrategistModel
 import com.waynlaw.albabot.strategist.runner.{Collector, Runner}
-import com.waynlaw.albabot.strategist.{DecisionMaker, RealWorld, Strategist}
+import com.waynlaw.albabot.strategist.{RealWorld, Strategist}
 
 object AlbaBotMain extends LazyLogging{
   def main(args: Array[String]) {
-    Console println Configure.load()
+    logger.info("I'll do my best for you. Sir.")
 
     val coinType = CoinType.BTC
     val realWorld = new RealWorld(coinType)

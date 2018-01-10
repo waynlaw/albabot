@@ -1,5 +1,6 @@
 package com.waynlaw.albabot.strategist
 
+import com.typesafe.scalalogging.LazyLogging
 import com.waynlaw.albabot.model.{OrderDetailData, TickerData}
 import com.waynlaw.albabot.model.coin.CoinType
 import com.waynlaw.albabot.model.coin.CoinType.Coin
@@ -9,7 +10,7 @@ import com.waynlaw.albabot.strategist.model.{Action, Event}
 import com.waynlaw.albabot.strategist.runner.{Actor, EventSource}
 import com.waynlaw.albabot.util.{BithumbApi, RealNumber}
 
-class RealWorld(coin: Coin) extends EventSource with Actor {
+class RealWorld(coin: Coin) extends EventSource with Actor with LazyLogging{
 
     var eventQueue: List[Event.EventVal] = List()
 
@@ -46,6 +47,7 @@ class RealWorld(coin: Coin) extends EventSource with Actor {
                 try {
                     val tickers: List[TickerData] = storage.get(coin.value)
                     val latestData = tickers.head
+
                     eventQueue = eventQueue :+ Event.ReceivePrice(
                         BigInt(latestData.date),
                         (BigInt(latestData.buyPrice.toDouble.toInt) + BigInt(latestData.sellPrice.toDouble.toInt)) / BigInt(2)

@@ -1,6 +1,6 @@
 package com.waynlaw.albabot.util
 
-import com.waynlaw.albabot.Configure
+import com.typesafe.config.ConfigFactory
 import com.waynlaw.albabot.model._
 import com.waynlaw.albabot.model.coin.CoinType.Coin
 import org.json4s.JsonAST.JString
@@ -18,9 +18,11 @@ object BithumbApi {
 
   implicit val formats = DefaultFormats
 
-  val config = Configure.load()
-  val baseUrl: String = config.baseUrl
-  val client = new HttpClient(config.apiKey, config.secretKey)
+  val config = ConfigFactory.load()
+  val baseUrl: String = config.getString("baseUrl")
+  val apiKey: String = config.getString("apiKey")
+  val secretKey: String = config.getString("secretKey")
+  val client = new HttpClient(apiKey, secretKey)
 
   /**
     * API  : https://api.bithumb.com/public/ticker/{currency}
@@ -187,7 +189,7 @@ object BithumbApi {
 
     val params = Map("endpoint" -> s"/$endpoint",
       "currency" -> currency.value,
-      "units" -> units,
+      "units" -> units
     )
 
     postCall[TradeResult](endpoint, params)
@@ -203,7 +205,7 @@ object BithumbApi {
 
     val params = Map("endpoint" -> s"/$endpoint",
       "currency" -> currency.value,
-      "units" -> units,
+      "units" -> units
     )
 
     postCall[TradeResult](endpoint, params)
@@ -212,7 +214,7 @@ object BithumbApi {
   private def postCall[T: Manifest](endpoint: String, params: Map[String, String]): Either[BithumbError, T] = {
     val nNonce = makeNonce
     val apiSign = makeApiSign(endpoint, params, nNonce)
-    val headers = makeHeaders(config.apiKey, apiSign, nNonce)
+    val headers = makeHeaders(apiKey, apiSign, nNonce)
     parsingBody[T](client.post(List(baseUrl, endpoint).mkString("/"), headers, params))
   }
 
@@ -222,7 +224,7 @@ object BithumbApi {
     val strData = HtmlUtil.encodeURIComponent(HtmlUtil.mapToQueryString(params))
     val str: String = s"/${endpoint}" + ";" + strData + ";" + nNonce
 
-    HtmlUtil.asHex(HtmlUtil.hmacSha512(str, config.secretKey))
+    HtmlUtil.asHex(HtmlUtil.hmacSha512(str, secretKey))
   }
 
   private def makeHeaders(apiKey: String, apiSign: String, apiNonce: String): Map[String,String] = {

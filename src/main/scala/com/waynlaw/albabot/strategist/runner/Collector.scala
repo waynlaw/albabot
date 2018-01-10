@@ -1,6 +1,6 @@
 package com.waynlaw.albabot.strategist.runner
 
-import com.waynlaw.albabot.Configure
+import com.typesafe.config.ConfigFactory
 import com.waynlaw.albabot.model.TickerAll
 import com.waynlaw.albabot.storage.Storage
 import com.waynlaw.albabot.util.BithumbApi
@@ -13,7 +13,7 @@ import com.waynlaw.albabot.util.BithumbApi
   */
 class Collector extends Thread{
 
-  val tick = Configure.load().collector.tick
+  val tick = ConfigFactory.load().getLong("collector.tick")
 
   val storage = Storage
 
