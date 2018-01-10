@@ -42,7 +42,6 @@ class RealWorld(coin: Coin) extends EventSource with Actor {
             case RequestCurrency =>
                 try {
                     val ticker = BithumbApi.ticker(coin)
-                    println(ticker)
                     eventQueue = eventQueue :+ Event.ReceivePrice(
                         BigInt(ticker.data.date),
                         (BigInt(ticker.data.buyPrice.toDouble.toInt) + BigInt(ticker.data.sellPrice.toDouble.toInt)) / BigInt(2)

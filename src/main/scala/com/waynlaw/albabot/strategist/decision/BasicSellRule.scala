@@ -11,10 +11,10 @@ case class BasicSellRule() extends TradeRule {
         BasicSellRule()
     }
 
-    override def evaluate(state: StrategistModel, timestamp: BigInt): Option[TradeAction.TradeActionVal] = {
+    override def evaluate(state: StrategistModel, timestamp: BigInt, krwUnit: BigInt, coinUnitExp: Int): Option[TradeAction.TradeActionVal] = {
         val historyAngle = DecisionUtil.historyAngle(state)
         val lastPrice = DecisionUtil.lastPrice(state)
-        val sellCount = profitedSellCount(state, lastPrice, 3)
+        val sellCount = profitedSellCount(state, lastPrice, coinUnitExp)
         if (0 >= historyAngle && RealNumber(0) < sellCount) {
             Some(Sell(sellCount, lastPrice))
         } else {

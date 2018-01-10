@@ -10,11 +10,11 @@ case class BasicBuyRule() extends TradeRule {
         BasicBuyRule()
     }
 
-    override def evaluate(state: StrategistModel, timestamp: BigInt): Option[TradeAction.TradeActionVal] = {
+    override def evaluate(state: StrategistModel, timestamp: BigInt, krwUnit: BigInt, coinUnitExp: Int): Option[TradeAction.TradeActionVal] = {
         val historyAngle = DecisionUtil.historyAngle(state)
         val angleFactor = BigInt((historyAngle / 50.0).toInt max 0)
         val wantedKrwAmount = BUY_IN_SINGLE_STEP * angleFactor
-        val buyableAmount = DecisionUtil.buyableAmount(state, wantedKrwAmount)
+        val buyableAmount = DecisionUtil.buyableAmount(state, wantedKrwAmount, coinUnitExp)
         val lastPrice = DecisionUtil.lastPrice(state)
 
         if (50 <= historyAngle && RealNumber(0) < buyableAmount) {

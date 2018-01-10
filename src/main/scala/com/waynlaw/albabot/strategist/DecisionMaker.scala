@@ -3,11 +3,6 @@ package com.waynlaw.albabot.strategist
 import com.waynlaw.albabot.strategist.decision.{BasicBuyRule, BasicSellRule, TradeRule}
 import com.waynlaw.albabot.strategist.model._
 
-class DecisionMaker() {
-
-
-}
-
 object DecisionMaker {
     case class Decisions(tradeAction: Option[TradeAction.TradeActionVal] = None, tradeRules: List[TradeRule] = Decisions.rules())
 
@@ -45,7 +40,7 @@ object DecisionMaker {
             val newRules = state.decisions.tradeRules.map(_.update(state, timestamp))
 
             if (isTradeable(state)) {
-                val decision = newRules.map(_.evaluate(state, timestamp)).find(x => x.nonEmpty).flatten
+                val decision = newRules.map(_.evaluate(state, timestamp, krwUnit, coinUnitExp)).find(x => x.nonEmpty).flatten
                 state.decisions.copy(tradeAction = decision, tradeRules = newRules)
             } else {
                 state.decisions.copy(tradeAction = None, tradeRules = newRules)

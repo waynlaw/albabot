@@ -15,5 +15,5 @@ trait TradeRule {
     /**
       * 실제로 거래를 결정한다.
       */
-    def evaluate(state: StrategistModel, timestamp: BigInt): Option[TradeActionVal]
+    def evaluate(state: StrategistModel, timestamp: BigInt, krwUnit: BigInt, coinUnitExp: Int): Option[TradeActionVal]
 }

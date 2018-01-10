@@ -8,9 +8,9 @@ object DecisionUtil {
         MathUtil.computeAngle(MathUtil.removeNoise(state.history).map(x => x.copy(timestamp = x.timestamp / 1000)))
     }
 
-    def buyableAmount(state: StrategistModel, wantedKrw: BigInt): RealNumber = {
+    def buyableAmount(state: StrategistModel, wantedKrw: BigInt, coinUnitExp: Int): RealNumber = {
         val buyKrw = wantedKrw min state.krw
-        RealNumber(buyKrw).divide(lastPrice(state), 3) //
+        RealNumber(buyKrw).divide(lastPrice(state), coinUnitExp)
     }
 
     def lastPrice(state: StrategistModel): BigInt = {

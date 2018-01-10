@@ -10,9 +10,9 @@ object AlbaBotMain extends LazyLogging{
   def main(args: Array[String]) {
     Console println Configure.load()
 
-    val realWorld = new RealWorld(CoinType.BTC)
-    val decisionMaker = new DecisionMaker()
-    val strategist = new Strategist(-3)
+    val coinType = CoinType.BTC
+    val realWorld = new RealWorld(coinType)
+    val strategist = new Strategist(coinUnitExp = coinType.minUnitExp)
     val runner = new Runner(
       StrategistModel(),
       strategist.compute,
