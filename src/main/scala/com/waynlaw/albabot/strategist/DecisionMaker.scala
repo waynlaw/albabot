@@ -37,13 +37,13 @@ object DecisionMaker {
         }
 
         def shouldTrade(state: StrategistModel, timestamp: BigInt, krwUnit: BigInt, coinUnitExp: Int): Decisions = {
-            val newRules = state.decisions.tradeRules.map(_.update(state, timestamp))
-
             if (isTradeable(state)) {
-                val decision = newRules.map(_.evaluate(state, timestamp, krwUnit, coinUnitExp)).find(x => x.nonEmpty).flatten
+                val rulesAndDecisions = state.decisions.tradeRules.map(_.evaluate(state, timestamp, krwUnit, coinUnitExp))
+                val newRules = rulesAndDecisions.map(_._1)
+                val decision = rulesAndDecisions.map(_._2).find(x => x.nonEmpty).flatten
                 state.decisions.copy(tradeAction = decision, tradeRules = newRules)
             } else {
-                state.decisions.copy(tradeAction = None, tradeRules = newRules)
+                state.decisions.copy(tradeAction = None, tradeRules = state.decisions.tradeRules)
             }
         }
     }

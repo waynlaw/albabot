@@ -8,12 +8,7 @@ import com.waynlaw.albabot.strategist.model.TradeAction.TradeActionVal
   */
 trait TradeRule {
     /**
-      * 사거나 파는 것을 결정하기 위한 정보를 갱신한다.
+      * 사거나 파는 것을 결정하기 위한 정보를 갱신하고 거래를 결정한다.
       */
-    def update(state: StrategistModel, timestamp: BigInt): TradeRule
-
-    /**
-      * 실제로 거래를 결정한다.
-      */
-    def evaluate(state: StrategistModel, timestamp: BigInt, krwUnit: BigInt, coinUnitExp: Int): Option[TradeActionVal]
+    def evaluate(state: StrategistModel, timestamp: BigInt, krwUnit: BigInt, coinUnitExp: Int): (TradeRule, Option[TradeActionVal])
 }
