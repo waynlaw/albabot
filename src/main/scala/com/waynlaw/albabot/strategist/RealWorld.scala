@@ -29,6 +29,7 @@ class RealWorld(coin: Coin) extends EventSource with Actor with LazyLogging{
     override def remainEventNum: Int = {
         eventQueue.length
     }
+
     /*
      * TODO:
      * 1. Async 로 동작 변경
@@ -37,12 +38,14 @@ class RealWorld(coin: Coin) extends EventSource with Actor with LazyLogging{
      */
     override def run(action: Action.ActionVal): Unit = {
         action match {
+            // 지갑 받아옴
             case RequestUserBalance =>
                 val balance = BithumbApi.balance(coin)
                 eventQueue = eventQueue :+ Event.ReceiveUserBalance(
                     BigInt(balance.right.get.data.availableKrw),
                     RealNumber(balance.right.get.data.availableBtc)
                 )
+            //
             case RequestCurrency =>
                 try {
                     val tickers: List[TickerData] = storage.get(coin.value)
@@ -116,20 +119,20 @@ class RealWorld(coin: Coin) extends EventSource with Actor with LazyLogging{
                         eventQueue = eventQueue :+ Event.OrderFailed(timestamp)
                 }
 
-            case RequestTradingInfo(tradingId, isBuying) =>
-                val detail = BithumbApi.orderDetail(coin, tradingId, if (isBuying) "bid" else "ask")
-                eventQueue = eventQueue :+ Event.ReceiveOrderInfo(
-                    tradingId,
-                    detail.right.get.data.map {
-                        case OrderDetailData(transactionDate, _, _, unitsTraded, price, fee, _) =>
-                            Event.ConfirmOrderInfo(
-                                transactionDate,
-                                RealNumber(unitsTraded),
-                                0,
-                                RealNumber(fee)
-                            )
-                    }
-                )
+//            case RequestTradingInfo(tradingId, isBuying) =>
+//                val detail = BithumbApi.orderDetail(coin, tradingId, if (isBuying) "bid" else "ask")
+//                eventQueue = eventQueue :+ Event.ReceiveOrderInfo(
+//                    tradingId,
+//                    detail.right.get.data.map {
+//                        case OrderDetailData(transactionDate, _, _, unitsTraded, price, fee, _) =>
+//                            Event.ConfirmOrderInfo(
+//                                transactionDate,
+//                                RealNumber(unitsTraded),
+//                                0,
+//                                RealNumber(fee)
+//                            )
+//                    }
+//                )
             case _ =>
         }
     }

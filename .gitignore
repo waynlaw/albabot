@@ -2,3 +2,4 @@
 target
 configure.json
 log
+application.conf

@@ -9,12 +9,6 @@ import com.waynlaw.albabot.model.coin.CoinType.Coin
 import scala.collection.JavaConverters._
 import scala.collection.concurrent._
 
-/**
-  *
-  * @author: Lawrence
-  * @since: 2017. 12. 4.
-  * @note:
-  */
 object Storage {
 
   // List에 앞에 있을 수록 최신 데이터이다.
@@ -38,7 +32,10 @@ object Storage {
     if(tickers == null) {
       coinToTickers.put(coin, List(value))
     } else {
-      coinToTickers.put(coin, value :: tickers)
+      // 1초에 한번 데이터를 수집하므로 10분이 지나면 5분치 데이터를 폐기한다.
+      val remainedData = if(tickers.size > 600) tickers.take(300)
+      else tickers
+      coinToTickers.put(coin, value :: remainedData)
     }
   }
 

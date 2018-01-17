@@ -9,31 +9,32 @@ object Runner {
     val MIN_TICK_MS = 300
 }
 
-class Runner(
-                state: StrategistModel,
+class Runner( state: StrategistModel,
                 evaluator: (StrategistModel, Event.EventVal, BigInt) => (StrategistModel, List[Action.ActionVal]),
                 eventSource: EventSource,
                 actor: Actor
             ) extends Thread with LazyLogging {
-
-    def nextTick(event: Event.EventVal, actionList: List[Action.ActionVal], tick: Int): Int = {
-        val newTick = (event, actionList) match {
-            case (Event.Tick, Nil) =>
-                tick * 2
-            case _ =>
-                tick / 2
-        }
-        Runner.MIN_TICK_MS max (Runner.MAX_TICK_MS min newTick)
-    }
+//
+//    def nextTick(event: Event.EventVal, actionList: List[Action.ActionVal], tick: Int): Int = {
+//        val newTick = (event, actionList) match {
+//            case (Event.Tick, Nil) =>
+//                tick * 2
+//            case _ =>
+//                tick / 2
+//        }
+//        Runner.MIN_TICK_MS max (Runner.MAX_TICK_MS min newTick)
+//    }
 
     override def run(): Unit = {
-        var tick = Runner.MIN_TICK_MS
+//        var tick = Runner.MIN_TICK_MS
         var lastState = state
 
         while (true) {
-            val event = eventSource.fetchEvent.getOrElse(Event.Tick)
             val timestamp = System.currentTimeMillis()
+
+            val event = eventSource.fetchEvent.getOrElse(Event.Tick)
             val (newState, actionList) = evaluator(lastState, event, timestamp)
+            lastState = newState
 
             logger.debug(s"\nTime: $timestamp] $actionList, $event\n${PrettyPrint.prettyPrint(lastState)} ->\n${PrettyPrint.prettyPrint(newState)} ")
             logger.debug(s"history num : ${newState.history.length}")
@@ -42,10 +43,9 @@ class Runner(
                 action <- actionList
             } actor.run(action)
 
-            tick = nextTick(event, actionList, tick)
-            lastState = newState
+//            tick = nextTick(event, actionList, tick)
 
-            Thread.sleep(tick)
+            Thread.sleep(1000L)
         }
     }
 }

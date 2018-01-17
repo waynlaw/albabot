@@ -13,12 +13,13 @@ object AlbaBotMain extends LazyLogging{
     val coinType = CoinType.BTC
     val realWorld = new RealWorld(coinType)
     val strategist = new Strategist(coinUnitExp = coinType.minUnitExp)
+
     val runner = new Runner(
       StrategistModel(),
       strategist.compute,
       realWorld,
-      realWorld
-    )
+      realWorld)
+
     runner.start()
 
     val collector = new Collector()
