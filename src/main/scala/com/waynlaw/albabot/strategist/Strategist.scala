@@ -19,7 +19,7 @@ class Strategist(krwUnit: BigInt = 1, coinUnitExp: Int = 0) {
             HistoryUpdater.update(lastState.history, event, timestamp),
             decisions
         )
-        (nextState, actionList(nextState, event, timestamp, decisions))
+        (nextState, ActionUpdater.evaluate(nextState, timestamp, decisions))
     }
 
     def cryptoCurrency(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: DecisionMaker.Decisions): List[CryptoCurrencyInfo] = {
@@ -123,50 +123,6 @@ class Strategist(krwUnit: BigInt = 1, coinUnitExp: Int = 0) {
             case _ =>
                 flattenInfo
         }
-    }
-
-    def actionList(state: StrategistModel, event: Event.EventVal, timestamp: BigInt, decisions: DecisionMaker.Decisions): List[Action.ActionVal] = {
-        val requestBalance = state.state match {
-            case State.Init(balanceRequester) if balanceRequester.willRequestUserBalance =>
-                Action.RequestUserBalance :: Nil
-            case _ =>
-                Nil
-        }
-
-        val requestCurrency = if (state.currencyRequester.willRequestUserCurrency) {
-            Action.RequestCurrency :: Nil
-        } else {
-            Nil
-        }
-
-        val requestTrade = decisions.tradeAction match {
-            case Some(Buy(amount, price)) =>
-                Action.RequestBuy(amount, price, timestamp) :: Nil
-            case Some(Sell(amount, price)) =>
-                Action.RequestSell(amount, price, timestamp) :: Nil
-            case _ =>
-                Nil
-        }
-
-        val requestTradingInfo = state.cryptoCurrency.flatMap(x => x.state match {
-            case CryptoCurrencyState.WaitingForBuying(id, _) =>
-                Action.RequestTradingInfo(id, isBuying = true) :: Nil
-            case CryptoCurrencyState.WaitingForSelling(id, _) =>
-                Action.RequestTradingInfo(id, isBuying = false) :: Nil
-            case _ =>
-                Nil
-        })
-
-        val retryOrder = state.cryptoCurrency.flatMap(x => x.state match {
-            case CryptoCurrencyState.TryToBuy(orderTimeStamp, errorTime) if 0 != errorTime && Strategist.ORDER_RETRY_DURATION_MS <= timestamp - errorTime =>
-                Action.RequestBuy(x.amount, x.price, orderTimeStamp) :: Nil
-            case CryptoCurrencyState.TryToSell(orderTimeStamp, errorTime) if 0 != errorTime && Strategist.ORDER_RETRY_DURATION_MS <= timestamp - errorTime =>
-                Action.RequestSell(x.amount, x.price, orderTimeStamp) :: Nil
-            case _ =>
-                Nil
-        })
-
-        requestBalance ::: requestCurrency ::: requestTrade ::: requestTradingInfo ::: retryOrder
     }
 }
 
