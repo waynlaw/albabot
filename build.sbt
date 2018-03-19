@@ -18,3 +18,6 @@ libraryDependencies ++= Seq(
   "org.scalactic" %% "scalactic" % "3.0.4",
   "org.scalatest" %% "scalatest" % "3.0.4" % "test"
 )
+
+
+unmanagedJars in Compile += file("ScalaTerminalLayout-assembly-0.1.jar")

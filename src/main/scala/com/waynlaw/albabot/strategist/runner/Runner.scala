@@ -2,7 +2,8 @@ package com.waynlaw.albabot.strategist.runner
 
 import com.typesafe.scalalogging.LazyLogging
 import com.waynlaw.albabot.strategist.model.{Action, Event, StrategistModel}
-import com.waynlaw.albabot.util.{MathUtil, PrettyPrint}
+import com.waynlaw.albabot.util.PrettyPrint
+import com.waynlaw.albabot.view.Display
 
 object Runner {
     val MAX_TICK_MS = 2000
@@ -14,19 +15,10 @@ class Runner( state: StrategistModel,
                 eventSource: EventSource,
                 actor: Actor
             ) extends Thread with LazyLogging {
-//
-//    def nextTick(event: Event.EventVal, actionList: List[Action.ActionVal], tick: Int): Int = {
-//        val newTick = (event, actionList) match {
-//            case (Event.Tick, Nil) =>
-//                tick * 2
-//            case _ =>
-//                tick / 2
-//        }
-//        Runner.MIN_TICK_MS max (Runner.MAX_TICK_MS min newTick)
-//    }
+
+    val display = new Display()
 
     override def run(): Unit = {
-//        var tick = Runner.MIN_TICK_MS
         var lastState = state
 
         while (true) {
@@ -39,11 +31,11 @@ class Runner( state: StrategistModel,
             logger.debug(s"\nTime: $timestamp] $actionList, $event\n${PrettyPrint.prettyPrint(lastState)} ->\n${PrettyPrint.prettyPrint(newState)} ")
             logger.debug(s"history num : ${newState.history.length}")
 
+            display.show(newState)
+
             for {
                 action <- actionList
             } actor.run(action)
-
-//            tick = nextTick(event, actionList, tick)
 
             Thread.sleep(1000L)
         }
