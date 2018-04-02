@@ -21,7 +21,7 @@ class Runner( state: StrategistModel,
     override def run(): Unit = {
         var lastState = state
 
-        while (true) {
+        while (display.isRunning()) {
             val timestamp = System.currentTimeMillis()
 
             val event = eventSource.fetchEvent.getOrElse(Event.Tick)
