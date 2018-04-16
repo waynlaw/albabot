@@ -21,7 +21,7 @@ import org.json4s.native.JsonMethods.parse
   * @since: 2017. 11. 17.
   * @note:
   */
-class HttpClient(apiKey: String, secretKey: String) extends LazyLogging {
+class HttpClient() extends LazyLogging {
 
   val httpclient = HttpClients.createDefault
 

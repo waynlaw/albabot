@@ -42,7 +42,7 @@ class Display {
     }
   }
 
-  def isRunning(): Boolean = {
+  def isRunning: Boolean = {
     terminal.isRunning
   }
 }

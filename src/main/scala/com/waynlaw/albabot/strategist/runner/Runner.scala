@@ -10,7 +10,7 @@ object Runner {
     val MIN_TICK_MS = 300
 }
 
-class Runner( state: StrategistModel,
+class Runner(state: StrategistModel,
                 evaluator: (StrategistModel, Event.EventVal, BigInt) => (StrategistModel, List[Action.ActionVal]),
                 eventSource: EventSource,
                 actor: Actor
@@ -21,7 +21,7 @@ class Runner( state: StrategistModel,
     override def run(): Unit = {
         var lastState = state
 
-        while (display.isRunning()) {
+        while (display.isRunning) {
             val timestamp = System.currentTimeMillis()
 
             val event = eventSource.fetchEvent.getOrElse(Event.Tick)

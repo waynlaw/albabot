@@ -22,7 +22,7 @@ object BithumbApi {
   val baseUrl: String = config.getString("baseUrl")
   val apiKey: String = config.getString("apiKey")
   val secretKey: String = config.getString("secretKey")
-  val client = new HttpClient(apiKey, secretKey)
+  val client = new HttpClient()
 
   /**
     * API  : https://api.bithumb.com/public/ticker/{currency}

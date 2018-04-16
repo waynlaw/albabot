@@ -1,5 +1,7 @@
 package com.waynlaw.albabot.model
 
+import com.waynlaw.albabot.api.database.model.DatabaseTickInfo
+
 /**
   *
   * @author: Lawrence
@@ -55,7 +57,22 @@ object TickerData {
       tickerWithoutDate.sellPrice,
       date
     )
+  }
 
+  def from(databaseTickInfo: DatabaseTickInfo): TickerData = {
+    TickerData(
+      databaseTickInfo.openingPrice.toString,
+      databaseTickInfo.closingPrice.toString,
+      databaseTickInfo.minPrice.toString,
+      databaseTickInfo.maxPrice.toString,
+      databaseTickInfo.averagePrice.toString,
+      databaseTickInfo.unitsTraded.toString,
+      databaseTickInfo.volume1day.toString,
+      databaseTickInfo.volume7day.toString,
+      databaseTickInfo.buyPrice.toString,
+      databaseTickInfo.sellPrice.toString,
+      javax.xml.bind.DatatypeConverter.parseDateTime(databaseTickInfo.regDate).getTimeInMillis.toString
+    )
   }
 }
 

@@ -1,8 +1,7 @@
 package com.waynlaw.albabot.strategist
 
 import com.typesafe.scalalogging.LazyLogging
-import com.waynlaw.albabot.model.{OrderDetailData, TickerData}
-import com.waynlaw.albabot.model.coin.CoinType
+import com.waynlaw.albabot.model.TickerData
 import com.waynlaw.albabot.model.coin.CoinType.Coin
 import com.waynlaw.albabot.storage.Storage
 import com.waynlaw.albabot.strategist.model.Action._
