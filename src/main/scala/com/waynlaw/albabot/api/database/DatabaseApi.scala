@@ -14,8 +14,13 @@ object DatabaseApi {
   val client = new HttpClient()
 
   def getHistory(currency: Coin): List[TickerData] = {
-    val api = List(baseUrl, "/bithumb/ticker/BTC/100").mkString("/")
-    val tickInfoList = client.get(api).extract[List[DatabaseTickInfo]]
-    tickInfoList.map(TickerData.from)
+    try {
+      val api = List(baseUrl, "/bithumb/ticker/BTC/100").mkString("/")
+      val tickInfoList = client.get(api).extract[List[DatabaseTickInfo]]
+      tickInfoList.map(TickerData.from)
+    } catch {
+      case _: Throwable =>
+        Nil
+    }
   }
 }
