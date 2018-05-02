@@ -14,6 +14,7 @@ class Display {
   val builder = LayoutBuilder()
   val runtimeManager = new RuntimeManager()
   val stdInManager = new StdInManager()
+  val chartRenderer = new ChartRenderer()
   val terminal = new TerminalManager(builder, _ => {
     callback()
     Vector()
@@ -31,6 +32,8 @@ class Display {
       println(s"Date : ${dateFormat.format(new Date())}\r")
       println(s"KRW : ${newState.krw}\r")
       println(s"Currency : ${newState.cryptoCurrency.mkString(", ")}\r")
+
+      chartRenderer.display(newState.history)
 
       println("history : \r")
       val showingLength = 10 min newState.history.length
