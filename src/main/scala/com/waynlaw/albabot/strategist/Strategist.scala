@@ -1,10 +1,6 @@
 package com.waynlaw.albabot.strategist
 
-import com.waynlaw.albabot.strategist.model.CryptoCurrencyState.Nothing
-import com.waynlaw.albabot.strategist.model.TradeAction.{Buy, Sell}
 import com.waynlaw.albabot.strategist.model._
-import com.waynlaw.albabot.util.RealNumber
-import com.waynlaw.albabot.util.RealNumber.RealNumberIsNumeric
 
 class Strategist(krwUnit: BigInt = 1, coinUnitExp: Int = 0) {
 
